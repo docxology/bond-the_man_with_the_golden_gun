@@ -1,57 +1,43 @@
+# Claim ledger for the SOLEX film package.
+#
+# Registers the sourced numeric claims used in the manuscript and mission
+# outcome. Every value below is computed deterministically by the named code
+# path (real data, no fabrication). Evidence = the module + test that locks it.
+#
+# Manuscript {{TOKEN}}s are hydrated by
+# src/the_man_with_the_golden_gun/manuscript_variables.py; do not edit the
+# values here AND there — the code is the source of truth.
+
 claims:
-  - claim_id: figure-export-dpi
-    kind: number
-    value: 300
-    source: projects/working/bond/the_man_with_the_golden_gun/src/viz_config.py plotting defaults (dpi)
-    source_tier: project_source
-    freshness: active
-    artifact_path: output/figures/convergence_plot.png
-  - claim_id: step-size-sensitivity-cap
-    kind: number
-    value: 500
-    source: projects/working/bond/the_man_with_the_golden_gun/src/sweeps.py sensitivity_sweep max_iter cap
-    source_tier: generated_metric
-    freshness: active
-    artifact_path: output/figures/step_size_sensitivity.png
-  - claim_id: stability-log-lower
-    kind: number
-    value: -6
-    source: projects/working/bond/the_man_with_the_golden_gun/src/figures/scientific_stability.py stability visualization caption
-    source_tier: project_source
-    freshness: active
-    artifact_path: output/figures/stability_analysis.png
-  - claim_id: solution-relative-error-exponent
-    kind: number
-    value: -4
-    source: projects/working/bond/the_man_with_the_golden_gun/manuscript/03_results.md stated precision threshold
-    source_tier: manuscript_claim
-    freshness: active
-    artifact_path: manuscript/03_results.md
-  - claim_id: stability-log-upper
-    kind: number
-    value: -9
-    source: projects/working/bond/the_man_with_the_golden_gun/src/figures/scientific_stability.py stability visualization caption
-    source_tier: project_source
-    freshness: active
-    artifact_path: output/figures/stability_analysis.png
-  - claim_id: benchmark-tolerance-exponent
-    kind: number
-    value: -10
-    source: projects/working/bond/the_man_with_the_golden_gun/scripts/optimization_analysis.py dimensional benchmark tolerance
-    source_tier: project_source
-    freshness: active
-    artifact_path: output/figures/performance_benchmark.png
-  - claim_id: benchmark-min-iterations
-    kind: number
-    value: 219
-    source: projects/working/bond/the_man_with_the_golden_gun/manuscript/03_results.md benchmark caption
-    source_tier: manuscript_claim
-    freshness: active
-    artifact_path: output/figures/performance_benchmark.png
-  - claim_id: benchmark-max-iterations
-    kind: number
-    value: 238
-    source: projects/working/bond/the_man_with_the_golden_gun/manuscript/03_results.md benchmark caption
-    source_tier: manuscript_claim
-    freshness: active
-    artifact_path: output/figures/performance_benchmark.png
+  solar_field_area_m2:
+    value: 300.0
+    evidence: src/the_man_with_the_golden_gun/solar_concentration.py::SOLEX_FIELD
+    test: tests/test_solar_concentration.py
+  solar_dni_w_per_m2:
+    value: 1000.0
+    evidence: src/the_man_with_the_golden_gun/solar_concentration.py::SOLEX_DNI
+    test: tests/test_solar_concentration.py
+  solar_heat_output_kw:
+    value: 191.6325
+    evidence: src/the_man_with_the_golden_gun/solar_concentration.py::solex_heat_output_kw
+    test: tests/test_solar_concentration.py
+  solar_concentration_ratio:
+    value: 50.1
+    evidence: src/the_man_with_the_golden_gun/solar_concentration.py::concentration_ratio
+    test: tests/test_solar_concentration.py
+  lair_escape_distance_passages:
+    value: 4
+    evidence: src/the_man_with_the_golden_gun/lair_topology.py::escape_distance
+    test: tests/test_lair_topology.py
+  lair_num_bottleneck_rooms:
+    value: 3
+    evidence: src/the_man_with_the_golden_gun/lair_topology.py::mirror_gated_bottlenecks
+    test: tests/test_lair_topology.py
+  duel_max_bounty:
+    value: 13.0
+    evidence: src/the_man_with_the_golden_gun/duel_scheduler.py::max_bounty_schedule
+    test: tests/test_duel_scheduler.py
+  duel_num_conflicts:
+    value: 1
+    evidence: src/the_man_with_the_golden_gun/duel_scheduler.py::find_conflicts
+    test: tests/test_duel_scheduler.py

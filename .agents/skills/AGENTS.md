@@ -5,7 +5,7 @@ One folder per skill. Each ships `AGENTS.md`, `README.md`, `SKILL.md`.
 
 | Skill | Purpose |
 | --- | --- |
-| [`the-man-with-the-golden-gun/`](the-man-with-the-golden-gun/AGENTS.md) | Drive this exemplar end-to-end. |
+| [`the-man-with-the-golden-gun/`](the-man-with-the-golden-gun/AGENTS.md) | Drive this SOLEX film package end-to-end. |
 
 ## Skill contract
 

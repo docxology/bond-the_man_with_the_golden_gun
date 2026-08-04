@@ -1,53 +1,59 @@
 ---
 name: the-man-with-the-golden-gun
-description: Code-centric optimization research exemplar — gradient descent, convergence analysis, automated figures, dashboard, and publication-quality PDF.
+description: PROJECT BOND film package (SOLEX) — solar concentration yield, funhouse lair escape topology, duel/bounty scheduling, frozen bond-api MissionProvider.
 version: 0.1.0
-author: docxology
+author: Daniel Ari Friedman
 license: MIT
-tags: [exemplar, code, optimization, thin-orchestrator]
+tags: [bond, film-package, solex, deterministic, mission-provider]
 ---
 
 # the-man-with-the-golden-gun
 
-Project-scoped skill for the in-repo exemplar at
-`projects/working/bond/the_man_with_the_golden_gun/`. Load this when working inside the project.
+Project-scoped skill for the PROJECT BOND film package at
+`projects/working/bond/the_man_with_the_golden_gun/`. Mission codename SOLEX
+(The Man with the Golden Gun, 1974). Load when working inside the package.
 
 ## When to Use
 
-- Working inside the `the_man_with_the_golden_gun` exemplar — running scripts, editing source,
-  or regenerating outputs.
-- Forking this exemplar as the starting scaffold for a new research project.
-- Validating that the exemplar's contracts (thin-orchestrator, layer boundaries,
-  no-mocks testing) still hold after changes.
+- Working inside the SOLEX package: running scripts, editing the domain core,
+  regenerating artifacts, or driving the mission lifecycle.
+- Modifying the frozen protocol adapter (`src/the_man_with_the_golden_gun/mission.py`).
+- Verifying the package's contracts: layer boundaries (pure domain core vs
+  single `bond_api` adapter), deterministic tests, ≥90% coverage, local-only.
 
 ## Quick Reference
 
 ```bash
-# From the repository root
-uv run pytest projects/working/bond/the_man_with_the_golden_gun/tests --cov=projects/working/bond/the_man_with_the_golden_gun/src --cov-fail-under=90
-uv run python scripts/pipeline/stage_02_analysis.py --project templates/the_man_with_the_golden_gun
-uv run python scripts/pipeline/stage_03_render.py --project templates/the_man_with_the_golden_gun
-uv run python scripts/pipeline/stage_04_validate.py --project templates/the_man_with_the_golden_gun
-uv run python scripts/pipeline/stage_05_copy.py --project templates/the_man_with_the_golden_gun
+cd projects/working/bond/the_man_with_the_golden_gun
+uv sync --extra dev                     # resolves the bond-api path dep
+uv run python scripts/00_preflight.py   # protocol discoverability gate
+uv run python scripts/run_mission.py    # brief..debrief (all phases)
+uv run python scripts/generate_artifacts.py
+uv run python scripts/z_generate_manuscript_variables.py
+uv run pytest tests/ --cov=src --cov-fail-under=90
 ```
+
+## Domain
+
+- `solar_concentration.py` — mirror array → heat yield, optimal allocation.
+- `lair_topology.py` — funhouse rooms/mirrors as graph; escape + bottlenecks.
+- `duel_scheduler.py` — bounty appointment book, weighted interval scheduling.
 
 ## Pitfalls
 
-- **Keep scripts thin.** Business logic belongs in `src/` or shared
-  `infrastructure/`, not in `scripts/`.
-- **No mocks.** All tests must use real data, real files, and real
-  computation.
-- **Outputs are disposable.** Never hand-edit `output/` — regenerate from
-  source and config.
-- **Keep tracked benchmarks deterministic.** Serialize reproducible inputs,
-  objective values, and checks; keep wall-clock timing as a runtime-only
-  diagnostic.
-- **Run from the repo root.** Commands assume the template monorepo root
-  as working directory unless the child `AGENTS.md` states otherwise.
+- **Frozen protocol.** implement the frozen `bond-api` `MissionProvider`; do
+  not invent new types. `mission.py` is the only module importing `bond_api`.
+- **Pure domain core stays standalone.** Do not import `bond_api` (or
+  `infrastructure`) inside the three concept modules.
+- **No mocks.** Real data + computation only; deterministic known vectors.
+- **Local-only.** No remote; never push; metadata sidecars drop DOI fields.
+- **Lineage gate.** Keep `template[_]code_project` strings out of your own
+  docs (bracket-split any self-referential `rg`/prose so they don't self-trip).
 
 ## Cross-refs
 
-- Project contract: [`AGENTS.md`](../../../AGENTS.md)
-- README: [`README.md`](../../../README.md)
-- TODO: [`TODO.md`](../../../TODO.md)
-- Exemplar roster: [`projects/AGENTS.md`](../../../../../AGENTS.md)
+- Package contract: [`AGENTS.md`](../../../AGENTS.md)
+- Overview: [`README.md`](../../../README.md)
+- Build history: [`TODO.md`](../../../TODO.md)
+- BOND suite skill: `bond-suite-package-development` (guardrails + frozen
+  protocol reference).

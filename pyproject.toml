@@ -1,5 +1,7 @@
-# Code Project Configuration
-# Inherits workspace settings from root pyproject.toml
+# PROJECT BOND · the_man_with_the_golden_gun (film package)
+# Mission codename: SOLEX — special-agent mission software.
+# Inherits workspace settings from root pyproject.toml; this is a LOCAL-ONLY
+# working tree (no remote, never push).
 
 [build-system]
 requires = ["setuptools>=61.0"]
@@ -7,9 +9,9 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "the_man_with_the_golden_gun"
-version = "2.5.2"
+version = "0.1.0"
 license = {text = "MIT"}
-description = "Fully-tested codebase with numerical optimization and analysis"
+description = "The Man with the Golden Gun (1974) — SOLEX: solar concentration, lair escape topology, and duel/bounty scheduling"
 authors = [
     {name = "Daniel Ari Friedman", email = "daniel@activeinference.institute"}
 ]
@@ -18,13 +20,19 @@ dependencies = [
     "numpy>=1.24.0",
     "matplotlib>=3.7.0",
     "pyyaml>=6.0",
-    "defusedxml>=0.7.1",
+    "bond-api",
 ]
+
+[tool.uv.sources]
+bond-api = { path = "/Users/4d/Documents/GitHub/template/projects/working/bond/bond-api" }
 
 [project.optional-dependencies]
 dev = [
     "pytest>=7.4.0",
     "pytest-cov>=4.1.0",
+    "ruff>=0.6.0",
+    "mypy>=1.10.0",
+    "types-PyYAML>=6.0",
 ]
 
 [tool.pytest.ini_options]
@@ -58,6 +66,22 @@ exclude_lines = [
     "if __name__ == .__main__.:",
     "raise NotImplementedError",
 ]
+
+[tool.mypy]
+# Project-local mypy settings (the monorepo root config has no mypy_path for
+# this package's src/ layout). Mirrors the root gates: strict-ish typing,
+# explicit package bases, ignore missing stubs.
+python_version = "3.12"
+mypy_path = ["src"]
+explicit_package_bases = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+check_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+ignore_missing_imports = true
 
 [tool.uv]
 # Inherits workspace settings from root pyproject.toml

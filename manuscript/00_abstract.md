@@ -1,11 +1,28 @@
-# Abstract {#sec:abstract}
+# {{BOND_TITLE}}
 
-This paper presents a convergence study of **fixed-step gradient descent** on a convex quadratic, framed as the computational exemplar of the [Research Project Template](https://github.com/docxology/template). The implementation lives in `projects/working/bond/the_man_with_the_golden_gun/src/optimizer.py`; experiments and figures are orchestrated by `projects/working/bond/the_man_with_the_golden_gun/scripts/optimization_analysis.py` and hydrated into the manuscript through `scripts/z_generate_manuscript_variables.py`, so tables and prose track `output/data/optimization_results.csv` after every pipeline run.
+**Mission codename: {{BOND_CODENAME}}** — Project BOND film dossier for *The
+Man with the Golden Gun* (1974).
 
-We evaluate {{CONFIG_NUM_STEP_SIZES}} step sizes from $\alpha = {{CONFIG_MIN_STEP_SIZE}}$ to $\alpha = {{CONFIG_MAX_STEP_SIZE}}$, spanning conservative, near-optimal, aggressive, and divergent regimes for a unit Hessian model. The build chain exercises template infrastructure end-to-end: scientific helpers (`infrastructure.scientific.stability`, `infrastructure.scientific.benchmarking`), validation, rendering (`infrastructure/rendering/pdf_renderer.py`), and reporting. Accessibility-oriented plotting defaults (colourblind-safe palette, 300 dpi exports) are centralized in `src/figures/` and `src/analysis/`.
+## Abstract
 
-Contributions are **methodological** and **architectural**. On the methods side, we relate empirical iteration counts and error decay to the scalar contraction factor $\rho(\alpha) = |1-\alpha|$ and document cases where runs hit $N_{\max} = {{CONFIG_MAX_ITERATIONS}}$ before meeting the gradient tolerance. On the architecture side, we demonstrate a zero-mock test suite on project `src/` (see [test_optimizer.py](https://github.com/docxology/template/blob/main/projects/working/bond/the_man_with_the_golden_gun/tests/test_optimizer.py)), automated six-figure analysis, and reproducibility metadata (configuration hash, artifact counts) injected into [@sec:reproducibility].
+This dossier documents the deterministic mission software built for the SOLEX
+operation. Three specialist capabilities support the field agent:
 
-**Results (this configuration):** {{RESULT_NUM_CONVERGED}} of {{CONFIG_NUM_STEP_SIZES}} grid points report `converged=True` in the CSV; non-convergent rows flag either slow progress at small $\alpha$ under the iteration cap or instability when $|1-\alpha| \geq 1$. The analytical minimizer remains $x^\ast = {{RESULT_OPTIMUM_X}}$ with $f(x^\ast) = {{RESULT_OPTIMUM_F}}$ for the configured $(A,b)$.
+1. **Solar concentration yield** — a heliostat-field model that converts a
+   mirror array's area and reflectivity into optical power and thermal heat
+   output, and allocates a mirror-area budget to the highest-yield mirrors.
+2. **Funhouse lair escape topology** — a graph solver over the villain's
+   mirror-lined funhouse, producing a shortest escape route and identifying
+   the bottleneck rooms that guard the exit.
+3. **Assassin duel / bounty scheduling** — an appointment book solved by
+   weighted interval scheduling, selecting a non-overlapping set of bounty
+   duels that maximises total reward and reporting every scheduling conflict.
 
-**Keywords:** {{CONFIG_KEYWORDS}}
+All results are computed from real, deterministic domain models with fixed
+seeds and no wall-clock dependence; every metric in this manuscript flows from
+code, never from hand-authored prose. The canonical SOLEX field converts a
+{{SOLEX_DNI}} W/m² irradiance into a thermal output of {{SOLEX_HEAT_KW}} kW at a
+concentration ratio of {{SOLEX_CONCENTRATION}}×, the lair has a
+{{LAIR_ESCAPE_DISTANCE}}-passage shortest escape route guarded by
+{{LAIR_NUM_BOTTLENECKS}} bottleneck rooms, and the duel book realises a maximum
+bounty of {{DUEL_TOTAL_BOUNTY}} from {{DUEL_NUM_DUELS}} contracts.

@@ -1,6 +1,6 @@
 # the-man-with-the-golden-gun skill — AGENTS.md
 
-Project-scoped skill bundle for the `the_man_with_the_golden_gun` exemplar.
+Project-scoped skill bundle for the `the_man_with_the_golden_gun` SOLEX film package.
 
 | File | Purpose |
 | --- | --- |
@@ -12,9 +12,9 @@ Project-scoped skill bundle for the `the_man_with_the_golden_gun` exemplar.
 
 Agents that need to:
 
-- Drive the in-repo exemplar end-to-end.
-- Fork this exemplar as a starting scaffold.
-- Verify layer boundaries and thin-orchestrator contracts.
+- Drive the SOLEX film package end-to-end (mission lifecycle, scripts, gates).
+- Modify the domain core or the frozen protocol adapter.
+- Verify layer boundaries, determinism, and the ≥90% coverage gate.
 
 ## Cross-refs
 

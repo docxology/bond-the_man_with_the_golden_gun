@@ -1,25 +1,33 @@
-conditions:
-  - name: conservative_step
-    role: reference
-    description: "Stable gradient-descent step below the spectral bound."
-  - name: near_optimal_step
-    role: proposed
-    description: "Template-recommended step near the stable convergence region."
-  - name: aggressive_step
-    role: variant
-    description: "Stress condition near or above the stability boundary."
-metrics:
-  primary:
-    name: objective_value
-    direction: minimize
-protocol: "Run the deterministic quadratic optimization sweep with identical initialization, seeds, tolerance, and iteration cap across all declared step-size conditions."
+# Advisory experiment plan for the SOLEX film package (declarative overlay).
+
+experiment:
+  codename: SOLEX
+  concepts:
+    - solar_concentration: "mirror array -> heat yield; canonical field 300 m2, DNI 1000 W/m2"
+    - lair_topology: "funhouse rooms/mirrors as undirected graph; escape + bottlenecks"
+    - duel_scheduler: "appointment book as weighted interval scheduling (max bounty)"
+
+canonical_inputs:
+  daily_dni_w_per_m2: 1000.0
+  receiver_area_m2: 5.0
+  lair_entry: Entrance
+  lair_exit: Vault
+  duel_bounty_max: 13.0
+
+primary_metrics:
+  - solar.heat_output_kw
+  - solar.concentration_ratio
+  - lair.escape_distance
+  - lair.num_bottlenecks
+  - duel.total_bounty
+  - duel.num_conflicts
+
 expected_figures:
-  - fig:convergence_plot
-  - fig:performance_benchmark
-  - fig:step_size_sensitivity
-expected_tables:
-  - tbl:optimization_results
-baselines:
-  - conservative_step
-ablations:
-  - aggressive_step
+  - output/figures/solex_yield.png
+  - output/figures/lair_topology.png
+  - output/figures/duel_schedule.png
+
+baseline:
+  description: canonical deterministic field/graph/duel-book constants
+ablation:
+  description: optimal_mirror_allocation under varying area budgets

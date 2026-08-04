@@ -4,7 +4,7 @@ This appendix records the resolved values of every manuscript metric at
 generation time (`{{GENERATION_TIMESTAMP}}`). The live inventory is produced
 by `scripts/z_generate_manuscript_variables.py` into
 `output/data/manuscript_variables.json`; the table below lists the
-deterministic canonical outputs of the three domain models.
+deterministic canonical outputs of the six domain models.
 
 ## Solar concentration
 
@@ -17,7 +17,20 @@ deterministic canonical outputs of the three domain models.
 | Thermal heat output | {{SOLEX_HEAT_KW}} kW |
 | Concentration ratio | {{SOLEX_CONCENTRATION}}× |
 
-## Lair topology
+## Solar tracking & daily insolation
+
+| Metric | Value |
+| --- | --- |
+| Latitude | {{SOLAR_LATITUDE}}°N |
+| Day of year | {{SOLAR_DAY_OF_YEAR}} |
+| Declination | {{SOLAR_DECLINATION}}° |
+| Noon elevation | {{SOLAR_NOON_ELEVATION}}° |
+| Daylight | {{SOLAR_DAYLIGHT_HOURS}} hours |
+| Extraterrestrial insolation | {{SOLAR_EXTRATERRESTRIAL_KWH_M2}} kWh/m² |
+| Clear-sky insolation | {{SOLAR_CLEAR_SKY_KWH_M2}} kWh/m² |
+| Field daily energy | {{SOLAR_FIELD_DAILY_KWH}} kWh |
+
+## Lair topology (canonical)
 
 | Metric | Value |
 | --- | --- |
@@ -27,7 +40,17 @@ deterministic canonical outputs of the three domain models.
 | Bottleneck rooms | {{LAIR_BOTTLENECKS}} |
 | Articulation points | {{LAIR_NUM_ARTICULATION}} |
 
-## Duel scheduling
+## Lair flow (extended)
+
+| Metric | Value |
+| --- | --- |
+| Rooms | {{LAIR_EXT_NUM_ROOMS}} |
+| Edge connectivity | {{LAIR_EXT_EDGE_CONNECTIVITY}} |
+| Min-cut walls | {{LAIR_EXT_MIN_CUT_EDGES}} |
+| Cheapest escape cost | {{LAIR_EXT_CHEAPEST_COST}} |
+| Cheapest escape route | {{LAIR_EXT_CHEAPEST_PATH}} |
+
+## Duel interval scheduling
 
 | Metric | Value |
 | --- | --- |
@@ -35,6 +58,15 @@ deterministic canonical outputs of the three domain models.
 | Conflicts | {{DUEL_NUM_CONFLICTS}} |
 | Selected | {{DUEL_SELECTED}} |
 | Maximum bounty | {{DUEL_TOTAL_BOUNTY}} |
+
+## Deadline scheduling
+
+| Metric | Value |
+| --- | --- |
+| Jobs | {{DUEL_DEADLINE_NUM_JOBS}} |
+| Selected | {{DUEL_DEADLINE_SELECTED}} |
+| Maximum profit | {{DUEL_DEADLINE_MAX_PROFIT}} |
+| Slot assignment | {{DUEL_DEADLINE_SLOTS}} |
 
 ## Environment
 

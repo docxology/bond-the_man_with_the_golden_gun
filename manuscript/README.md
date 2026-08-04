@@ -29,6 +29,7 @@ Reference images via Pandoc-crossref labels, never hardcoded numbers:
 | Label | PNG | Generator |
 | --- | --- | --- |
 | `{#fig:solex_yield}` | `../output/figures/solex_yield.png` | `figures.plot_solex_yield` |
+| `{#fig:solex_daily}` | `../output/figures/solex_daily.png` | `figures.plot_daily_solar_profile` |
 | `{#fig:lair_topology}` | `../output/figures/lair_topology.png` | `figures.plot_lair_topology` |
 | `{#fig:duel_schedule}` | `../output/figures/duel_schedule.png` | `figures.plot_duel_schedule` |
 

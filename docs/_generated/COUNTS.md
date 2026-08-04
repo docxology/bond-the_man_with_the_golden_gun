@@ -5,9 +5,10 @@ run; do not hand-edit the measured values.
 
 | Metric | Value |
 | --- | --- |
-| Test count | 72 |
+| Test count | 111 |
 | Line coverage (`src/`) | 100.00% |
 | Branch coverage (`src/`) | 100.00% |
+| Zero-mock | yes |
 | Gate | `--cov-fail-under=90` (passing) |
 
 Regenerate (informational): `uv run pytest tests/ --cov=src -q`

@@ -47,6 +47,28 @@ def test_generate_variables_values() -> None:
     assert variables["DUEL_NUM_CONFLICTS"] == "1"
 
 
+def test_generate_variables_deepened_values() -> None:
+    variables = generate_variables()
+    # solar tracking
+    assert variables["SOLAR_LATITUDE"] == "8.0"
+    assert variables["SOLAR_DAY_OF_YEAR"] == "172"
+    assert variables["SOLAR_DECLINATION"] == "23.45"
+    assert variables["SOLAR_DAYLIGHT_HOURS"] == "12.47"
+    assert variables["SOLAR_NOON_ELEVATION"] == "74.55"
+    assert variables["SOLAR_CLEAR_SKY_KWH_M2"] == "7.52"
+    assert variables["SOLAR_FIELD_DAILY_KWH"] == "1441.7"
+    # lair flows
+    assert variables["LAIR_EXT_EDGE_CONNECTIVITY"] == "3"
+    assert variables["LAIR_EXT_MIN_CUT_EDGES"] == "3"
+    assert variables["LAIR_EXT_CHEAPEST_COST"] == "3"
+    assert variables["LAIR_EXT_CHEAPEST_PATH"] == "Entry -> Tunnel -> Armory -> Vault"
+    # deadline scheduling
+    assert variables["DUEL_DEADLINE_NUM_JOBS"] == "5"
+    assert variables["DUEL_DEADLINE_MAX_PROFIT"] == "18.0"
+    assert variables["DUEL_DEADLINE_SELECTED"] == "E, C, B"
+    assert variables["DUEL_DEADLINE_SLOTS"] == "1:B, 2:C, 3:E"
+
+
 def test_generate_variables_now_override() -> None:
     variables = generate_variables(now="2020-01-01T00:00:00Z")
     assert variables["GENERATION_TIMESTAMP"] == "2020-01-01T00:00:00Z"
@@ -60,6 +82,19 @@ def test_generate_variables_non_dict_paper(tmp_path) -> None:  # type: ignore[no
     cfg.write_text("paper: [1, 2]\nmission: {codename: SOLEX}\n", encoding="utf-8")
     variables = generate_variables(config_path=cfg)
     assert variables["BOND_TITLE"] == "The Man with the Golden Gun: SOLEX"
+
+
+def test_generate_variables_non_dict_site_fallback(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    # Malformed experiment / solar_tracking blocks fall back to site constants.
+    cfg = tmp_path / "config.yaml"
+    cfg.write_text("experiment: {solar_tracking: [1, 2]}\n", encoding="utf-8")
+    variables = generate_variables(config_path=cfg)
+    assert variables["SOLAR_LATITUDE"] == "8.0"
+    assert variables["SOLAR_DAY_OF_YEAR"] == "172"
+    # experiment block itself not a mapping -> same fallback
+    cfg.write_text("experiment: [1, 2]\n", encoding="utf-8")
+    variables = generate_variables(config_path=cfg)
+    assert variables["SOLAR_LATITUDE"] == "8.0"
 
 
 def test_resolve_text() -> None:

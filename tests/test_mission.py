@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 from bond_api.protocol import (
     MissionProvider as Protocol,
     Provenance,
@@ -36,9 +38,15 @@ def test_identity() -> None:
 
 def test_brief_objectives_and_assets() -> None:
     brief = MissionProvider().brief()
-    assert len(brief.objectives) == 3
-    assert len(brief.assets) == 3
+    assert len(brief.objectives) == 6
+    assert len(brief.assets) == 6
     assert any(c.kind == "determinism" for c in brief.constraints)
+
+
+def test_plan_steps() -> None:
+    plan = MissionProvider().plan(MissionProvider().brief())
+    assert len(plan.steps) == 7
+    assert plan.steps[-1].action == "attach_provenance"
 
 
 def test_run_mission_full_flow() -> None:
@@ -46,7 +54,7 @@ def test_run_mission_full_flow() -> None:
 
     debrief = run_mission(MissionProvider(), ReconRequest(goal="survey the SOLEX domain"))
     assert debrief.outcome.success is True
-    assert len(debrief.lessons) == 3
+    assert len(debrief.lessons) == 6
     # integrated results present
     assert debrief.outcome.results["integrated"]["max_duel_bounty"] == 13.0
     assert debrief.outcome.provenance.seed == SEED
@@ -102,6 +110,12 @@ def test_gadget_callable() -> None:
 
 def test_run_domain_shape() -> None:
     domain = run_domain()
-    assert set(domain) == {"solar", "lair", "duel", "integrated"}
+    assert set(domain) == {"solar", "tracking", "lair", "flows", "duel", "deadline", "integrated"}
     assert domain["lair"]["escape_distance"] == 4
     assert domain["duel"]["total_bounty"] == 13.0
+    # deepened solvers
+    assert domain["tracking"]["field_daily_energy_kwh"] == pytest.approx(1441.72, abs=0.5)
+    assert domain["flows"]["edge_connectivity"] == 3.0
+    assert domain["flows"]["num_disjoint_routes"] == 3
+    assert domain["deadline"]["max_profit"] == 18.0
+    assert domain["deadline"]["selected_jobs"] == ["E", "C", "B"]

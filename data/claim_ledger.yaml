@@ -41,3 +41,35 @@ claims:
     value: 1
     evidence: src/the_man_with_the_golden_gun/duel_scheduler.py::find_conflicts
     test: tests/test_duel_scheduler.py
+  solar_declination_deg:
+    value: 23.45
+    evidence: src/the_man_with_the_golden_gun/solar_tracking.py::solar_declination_deg
+    test: tests/test_solar_tracking.py
+  solar_daylight_hours:
+    value: 12.47
+    evidence: src/the_man_with_the_golden_gun/solar_tracking.py::daylight_hours
+    test: tests/test_solar_tracking.py
+  solar_clear_sky_insolation_kwh_m2:
+    value: 7.52
+    evidence: src/the_man_with_the_golden_gun/solar_tracking.py::daily_clear_sky_insolation_kwh_m2
+    test: tests/test_solar_tracking.py
+  solar_field_daily_energy_kwh:
+    value: 1441.7
+    evidence: src/the_man_with_the_golden_gun/solar_tracking.py::field_daily_energy_kwh
+    test: tests/test_solar_tracking.py
+  lair_edge_connectivity:
+    value: 3
+    evidence: src/the_man_with_the_golden_gun/lair_flows.py::edge_connectivity
+    test: tests/test_lair_flows.py
+  lair_min_cut_edges:
+    value: 3
+    evidence: src/the_man_with_the_golden_gun/lair_flows.py::min_cut_edges
+    test: tests/test_lair_flows.py
+  lair_cheapest_escape_cost:
+    value: 3.0
+    evidence: src/the_man_with_the_golden_gun/lair_flows.py::cost_aware_escape
+    test: tests/test_lair_flows.py
+  deadline_max_profit:
+    value: 18.0
+    evidence: src/the_man_with_the_golden_gun/deadline_scheduler.py::max_profit_with_deadlines
+    test: tests/test_deadline_scheduler.py

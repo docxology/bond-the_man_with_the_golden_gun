@@ -59,3 +59,22 @@ experiment:
   lair_exit: "Vault"
   duel_max_bounty: 13.0
   data_ledger: "data/claim_ledger.yaml"
+  # Solar-tracking site geometry (canonical island: ~8°N, June solstice).
+  solar_tracking:
+    latitude_deg: 8.0
+    day_of_year: 172
+    dni_peak_w_m2: 1000.0
+    solar_constant_w_m2: 1361.0
+    clearness: 0.75
+  # Unit-time deadline bounty contracts (deadline slots, profit).
+  deadline_jobs:
+    - {id: A, deadline: 1, profit: 3.0}
+    - {id: B, deadline: 2, profit: 5.0}
+    - {id: C, deadline: 2, profit: 6.0}
+    - {id: D, deadline: 3, profit: 2.0}
+    - {id: E, deadline: 3, profit: 7.0}
+  # Extended funhouse lair flow fixture.
+  extended_lair:
+    entry: "Entry"
+    exit: "Vault"
+    edge_disjoint_routes: 3

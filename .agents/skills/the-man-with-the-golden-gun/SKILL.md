@@ -36,8 +36,11 @@ uv run pytest tests/ --cov=src --cov-fail-under=90
 ## Domain
 
 - `solar_concentration.py` — mirror array → heat yield, optimal allocation.
+- `solar_tracking.py` — solar position + daily clear-sky insolation.
 - `lair_topology.py` — funhouse rooms/mirrors as graph; escape + bottlenecks.
+- `lair_flows.py` — max-flow / min-cut + cost-aware escape (Dijkstra).
 - `duel_scheduler.py` — bounty appointment book, weighted interval scheduling.
+- `deadline_scheduler.py` — unit-time deadline bounty scheduling (union-find).
 
 ## Pitfalls
 

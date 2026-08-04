@@ -22,7 +22,7 @@ line+branch coverage on `src/`.
 
 | Surface | Rule |
 | --- | --- |
-| `src/the_man_with_the_golden_gun/solar_concentration.py`, `lair_topology.py`, `duel_scheduler.py` | Pure domain core — stdlib + numpy only, **no** `bond_api` and **no** `infrastructure` imports; importable standalone (fallback if the path dep ever fails) |
+| `src/the_man_with_the_golden_gun/solar_concentration.py`, `solar_tracking.py`, `lair_topology.py`, `lair_flows.py`, `duel_scheduler.py`, `deadline_scheduler.py` | Pure domain core — stdlib (+ numpy/matplotlib in figures) only, **no** `bond_api` and **no** `infrastructure` imports; importable standalone (fallback if the path dep ever fails) |
 | `src/the_man_with_the_golden_gun/mission.py` | Thin adapter implementing the frozen `MissionProvider` protocol; the only module that imports `bond_api` |
 | `src/the_man_with_the_golden_gun/manuscript_variables.py`, `figures.py`, `mission_cli.py` | Token hydration, deterministic figure generation, CLI output shaping |
 | `scripts/` | Thin orchestrators (argv forwarding); may import `src/` and `bond_api` |
@@ -38,12 +38,21 @@ the shared `bond_api.registry.GadgetRegistry`.
 * **Solar concentration yield** (`solar_concentration.py`) — mirror-array →
   heat-output model; field optical power, thermal output, concentration
   ratio, and greedy optimal mirror-budget allocation.
+* **Solar tracking & daily insolation** (`solar_tracking.py`) — Spencer
+  declination / equation of time, daylight window, Duffie–Beckman daily
+  extraterrestrial and clear-sky insolation, field daily thermal energy.
 * **Funhouse lair escape topology** (`lair_topology.py`) — rooms/mirrors as an
   undirected graph; BFS shortest escape route, reachability, Tarjan cut
   vertices, and exact `entry→exit` bottleneck rooms.
+* **Lair flow analysis** (`lair_flows.py`) — Edmonds–Karp max flow (edge
+  connectivity), min-cut mirror walls, edge-disjoint-route decomposition, and
+  Dijkstra cost-aware cheapest escape.
 * **Assassin duel / bounty scheduling** (`duel_scheduler.py`) — appointment
   book as half-open intervals; conflict detection, weighted interval
   scheduling (max-bounty DP), earliest-finish greedy, and `active_at`.
+* **Deadline bounty scheduling** (`deadline_scheduler.py`) — unit-time jobs
+  with deadlines and profits; greedy (union–find) max-profit selection and
+  slot assignment.
 
 ## Manuscript variables
 

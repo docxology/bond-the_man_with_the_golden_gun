@@ -34,9 +34,11 @@ from .solar_concentration import (  # noqa: E402
     concentration_ratio,
     thermal_output_kw,
 )
+from .solar_tracking import SOLEX_LATITUDE_DEG, solex_daily_profile  # noqa: E402
 
 __all__ = [
     "generate_all_figures",
+    "plot_daily_solar_profile",
     "plot_duel_schedule",
     "plot_lair_topology",
     "plot_solex_yield",
@@ -135,11 +137,35 @@ def plot_duel_schedule(path: str | Path | None = None) -> Path:
     return out
 
 
-def generate_all_figures(output_dir: str | Path | None = None) -> tuple[Path, Path, Path]:
-    """Render all three SOLEX figures into ``output_dir`` (default figures dir)."""
+def plot_daily_solar_profile(path: str | Path | None = None) -> Path:
+    """Beam flux on the horizontal plane across the canonical SOLEX day.
+
+    Uses :func:`solex_daily_profile` (Spencer declination + Duffie–Beckman
+    geometry) to draw the deterministic sunrise-to-sunset flux curve.
+    """
+    out = Path(path) if path is not None else DEFAULT_FIGURES_DIR / "solex_daily.png"
+    _ensure_dir(out)
+    profile = solex_daily_profile()
+
+    fig, ax = plt.subplots(figsize=(7, 4.5))
+    ax.plot(profile["solar_time_h"], profile["beam_kw_m2"], color="#1f77b4", linewidth=2)
+    ax.fill_between(profile["solar_time_h"], profile["beam_kw_m2"], alpha=0.25, color="#1f77b4")
+    ax.set_xlabel("Solar time (hours)")
+    ax.set_ylabel("Horizontal beam flux (kW/m²)")
+    ax.set_title(f"SOLEX daily solar profile (lat {SOLEX_LATITUDE_DEG:.0f}°N, solstice)")
+    ax.grid(alpha=0.3)
+    fig.tight_layout()
+    fig.savefig(out, dpi=120)
+    plt.close(fig)
+    return out
+
+
+def generate_all_figures(output_dir: str | Path | None = None) -> tuple[Path, Path, Path, Path]:
+    """Render all four SOLEX figures into ``output_dir`` (default figures dir)."""
     base = Path(output_dir) if output_dir is not None else DEFAULT_FIGURES_DIR
     return (
         plot_solex_yield(base / "solex_yield.png"),
+        plot_daily_solar_profile(base / "solex_daily.png"),
         plot_lair_topology(base / "lair_topology.png"),
         plot_duel_schedule(base / "duel_schedule.png"),
     )

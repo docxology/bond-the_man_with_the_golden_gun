@@ -78,10 +78,24 @@ added a test that makes the gate fire:
 
 * `verify_declared_experiment()` cross-checks the config against the models.
   `test_declared_experiment_rejects_a_stale_config` tampers with each declared
-  key in turn and asserts the mismatch raises and names the offending key.
+  key in turn and asserts the mismatch raises and names the offending key, and
+  `test_declared_experiment_verifies_every_key_of_the_live_config` compares the
+  verified set against the leaf keys really present in the file — a key nobody
+  wired up is a failure, not a silent omission.
+* `verify_claim_ledger()` recomputes every claim in `data/claim_ledger.yaml`.
+  `test_every_claim_value_can_fail` runs one case per claim: perturb the
+  recorded value by one and assert the verifier names that claim. The evidence
+  column is controlled too — a renamed symbol or a deleted test file raises.
+* The `experiment_plan.yaml` / `domain_profile.yaml` overlays are checked
+  against `DOMAIN_MODULES`, the figure registry, the canonical inputs and the
+  ledger claim ids, each with a tampered-copy control. These files are the
+  reason this section exists: before the checks they were pure prose, and both
+  sat three modules and one figure behind the code without anything noticing.
 * The token gate scans the manuscript for placeholders the generator does not
   produce. Its scan set is asserted non-empty first, because a gate that finds
-  zero sections would report a clean sweep.
+  zero sections would report a clean sweep — and it is the same set
+  `write_resolved_tree()` writes, because a file that is hydrated but not
+  scanned (as `preamble.md` once was) is a gap the gate cannot see.
 * The figure cross-check runs in **both** directions: no section may cite a
   figure the registry lacks, and no registered figure may go unreferenced.
 * The determinism claim is not asserted in prose alone —

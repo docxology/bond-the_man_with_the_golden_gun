@@ -9,7 +9,7 @@ concerns. See also [`README.md`](README.md) (token and figure pipeline) and
 
 | File | Holds |
 | --- | --- |
-| `preamble.md` | Pandoc document metadata only — not a numbered section, not token-gated |
+| `preamble.md` | Pandoc document metadata only — not a numbered section, but it carries the title token, so it *is* hydrated and *is* token-gated |
 | `00_abstract.md` | The dossier in one page, with headline results as tokens |
 | `01_introduction.md` | The three film premises restated as computational problems |
 | `02_methodology.md` | The algorithms and why each is exact, with citations |
@@ -23,9 +23,11 @@ concerns. See also [`README.md`](README.md) (token and figure pipeline) and
 | `config.yaml` | Token inputs and the verified `experiment` declarations |
 | `references.bib` | Real, checkable sources only |
 
-Sections matching `[0-9]*.md` are hydrated by
-`manuscript_variables.write_resolved_tree()` and scanned by the live token
-gate. `preamble.md` is deliberately outside that glob.
+The hydrated set is `manuscript_variables.manuscript_sources()`: sections
+matching `[0-9]*.md` plus `preamble.md`. `write_resolved_tree()` writes that
+set and the live token gate scans that set — one function, so a file cannot be
+hydrated without being gated. Editing guides (`README.md`, this file,
+`SYNTAX.md`) are not sources and are not scanned.
 
 ## Token protocol
 

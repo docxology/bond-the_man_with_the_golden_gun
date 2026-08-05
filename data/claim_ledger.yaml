@@ -4,9 +4,18 @@
 # outcome. Every value below is computed deterministically by the named code
 # path (real data, no fabrication). Evidence = the module + test that locks it.
 #
+# This file is VERIFIED, not documentation: `declarations.verify_claim_ledger()`
+# recomputes every `value` below from the domain models at the recorded
+# precision, checks that each `evidence` file defines the named symbol and that
+# each `test` file exists, and requires this claim set to match the
+# recomputation registry exactly in both directions — so a claim cannot be
+# added here without a recomputation, nor left behind when the code moves. The
+# verifier runs during token generation, because `manuscript/config.yaml`
+# declares this path as `experiment.data_ledger`.
+#
 # Manuscript {{TOKEN}}s are hydrated by
-# src/the_man_with_the_golden_gun/manuscript_variables.py; do not edit the
-# values here AND there — the code is the source of truth.
+# src/the_man_with_the_golden_gun/manuscript_variables.py; the code is the
+# source of truth — this ledger is a checked restatement of it.
 
 claims:
   solar_field_area_m2:

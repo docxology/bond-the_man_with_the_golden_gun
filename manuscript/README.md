@@ -13,24 +13,29 @@ never hand-authored in prose.
 
 ## Sections
 
-`preamble.md` (Pandoc metadata, not token-gated), then the numbered set:
-`00_abstract`, `01_introduction`, `02_methodology`, `03_results`,
-`04_conclusion`, `05_experimental_setup`, `06_reproducibility`,
-`07_scope_and_related_work`, `08_appendix`, `99_references`. Inputs live in
-`config.yaml` and `references.bib`.
+`preamble.md` (Pandoc metadata — one title token, hydrated and gated like any
+other source), then the numbered set: `00_abstract`, `01_introduction`,
+`02_methodology`, `03_results`, `04_conclusion`, `05_experimental_setup`,
+`06_reproducibility`, `07_scope_and_related_work`, `08_appendix`,
+`99_references`. Inputs live in `config.yaml` and `references.bib`.
 
 ## Token pipeline
 
 1. `scripts/z_generate_manuscript_variables.py` calls `generate_variables()`,
    which reads `config.yaml` and calls the domain models live.
 2. Before producing anything, `verify_declared_experiment()` recomputes every
-   canonical fact `config.yaml` restates and raises if the config disagrees
-   with the code.
+   value the `experiment` block of `config.yaml` declares and raises if the
+   config disagrees with the code. It enumerates the leaf keys actually present
+   and raises on any key it has no recomputation for, so the block cannot grow
+   an unchecked corner. That includes `data_ledger`: the file it names
+   (`data/claim_ledger.yaml`) has every claim recomputed by
+   `declarations.verify_claim_ledger()`.
 3. It writes `output/data/manuscript_variables.json` and the resolved tree to
    `output/manuscript/`, exiting non-zero if any placeholder survives.
 4. The live gate
    `tests/test_manuscript_variables.py::test_all_manuscript_tokens_are_generated`
-   scans `[0-9]*.md` and fails if a section cites a token the generator does
+   scans exactly the files `write_resolved_tree()` hydrates — both call
+   `manuscript_sources()` — and fails if one cites a token the generator does
    not produce. Its scan set is asserted non-empty, so it cannot pass by
    finding nothing.
 

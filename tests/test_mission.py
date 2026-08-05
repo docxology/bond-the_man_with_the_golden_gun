@@ -36,6 +36,19 @@ def test_identity() -> None:
     assert mission_id() == {"film": FILM, "codename": CODENAME, "version": "0.1.0"}
 
 
+def test_codename_constant_is_bound_to_the_pure_layer() -> None:
+    """The adapter's codename and the pure-layer constant cannot diverge.
+
+    `declarations.MISSION_CODENAME` exists so token generation and the config
+    gate never need the `bond_api` adapter; this test is what stops it from
+    becoming a second, drifting copy of `mission.CODENAME`.
+    """
+    from the_man_with_the_golden_gun.declarations import MISSION_CODENAME
+
+    assert MISSION_CODENAME == CODENAME
+    assert MissionProvider().brief().codename == MISSION_CODENAME
+
+
 def test_brief_objectives_and_assets() -> None:
     brief = MissionProvider().brief()
     assert len(brief.objectives) == 6

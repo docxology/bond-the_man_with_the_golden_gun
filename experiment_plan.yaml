@@ -1,33 +1,57 @@
-# Advisory experiment plan for the SOLEX film package (declarative overlay).
+# Declarative experiment plan for the SOLEX film package.
+#
+# Declarative in that nothing here executes — but NOT inert. Every list below
+# is recomputed from the domain models and compared by
+# `the_man_with_the_golden_gun.declarations.verify_experiment_plan()`, which
+# `tests/test_declarations.py` runs against this file on every test run. An
+# entry that falls behind the code fails the suite instead of quietly
+# describing a package that no longer exists (which is exactly what this file
+# did while the package grew from three modules to six).
+#
+# Checked here: `experiment.codename`, `experiment.concepts` (must equal
+# `declarations.DOMAIN_MODULES` in order), every `canonical_inputs` key (must
+# equal the recomputed model value), every `primary_metrics` entry (must be a
+# registered claim in data/claim_ledger.yaml), and `expected_figures` (must
+# equal the `figures.FIGURES` registry in order). The `baseline` and `ablation`
+# descriptions below are free prose and are deliberately NOT checked; an
+# unknown top-level key raises rather than passing silently.
 
 experiment:
   codename: SOLEX
   concepts:
     - solar_concentration: "mirror array -> heat yield; canonical field 300 m2, DNI 1000 W/m2"
-    - lair_topology: "funhouse rooms/mirrors as undirected graph; escape + bottlenecks"
+    - solar_tracking: "Spencer declination and Duffie-Beckman clear-sky insolation at the canonical site"
+    - lair_topology: "funhouse rooms/mirrors as undirected graph; escape route + exact bottlenecks"
+    - lair_flows: "Edmonds-Karp max flow, min cut of mirror walls, Dijkstra cost-aware escape"
     - duel_scheduler: "appointment book as weighted interval scheduling (max bounty)"
+    - deadline_scheduler: "unit-time deadline bounty contracts by matroid greedy (max profit)"
 
 canonical_inputs:
   daily_dni_w_per_m2: 1000.0
   receiver_area_m2: 5.0
   lair_entry: Entrance
   lair_exit: Vault
-  duel_bounty_max: 13.0
+  duel_max_bounty: 13.0
 
+# Claim ids registered in data/claim_ledger.yaml (each one recomputed there).
 primary_metrics:
-  - solar.heat_output_kw
-  - solar.concentration_ratio
-  - lair.escape_distance
-  - lair.num_bottlenecks
-  - duel.total_bounty
-  - duel.num_conflicts
+  - solar_heat_output_kw
+  - solar_concentration_ratio
+  - solar_field_daily_energy_kwh
+  - lair_escape_distance_passages
+  - lair_num_bottleneck_rooms
+  - lair_min_cut_edges
+  - duel_max_bounty
+  - duel_num_conflicts
+  - deadline_max_profit
 
 expected_figures:
   - output/figures/solex_yield.png
+  - output/figures/solex_daily.png
   - output/figures/lair_topology.png
   - output/figures/duel_schedule.png
 
 baseline:
-  description: canonical deterministic field/graph/duel-book constants
+  description: canonical deterministic field/site/graph/duel-book/deadline-book constants
 ablation:
   description: optimal_mirror_allocation under varying area budgets

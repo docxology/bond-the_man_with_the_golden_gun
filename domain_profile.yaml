@@ -1,5 +1,16 @@
-# Advisory agentic-research controls for the SOLEX film package.
-# Declarative overlays only — they never execute autonomous agents.
+# Declarative agentic-research profile for the SOLEX film package.
+# Declarative overlay only — it never executes autonomous agents.
+#
+# Checked, not advisory: `project`, `codename`, `source_policy.modules` (must
+# equal `declarations.DOMAIN_MODULES`), `artifact_expectations.script_artifacts`
+# (must equal the data artifacts plus the `figures.FIGURES` registry, in order),
+# and `review_gates.coverage_min_line_branch` (must equal
+# `manuscript/config.yaml` gates.coverage_fail_under). Enforced by
+# `declarations.verify_domain_profile()` from `tests/test_declarations.py`.
+#
+# The remaining `review_gates` booleans are policy statements about how this
+# package is worked on, not machine-checked facts, and the verifier does not
+# claim otherwise.
 
 project: the_man_with_the_golden_gun
 codename: SOLEX
@@ -14,16 +25,24 @@ review_gates:
 
 source_policy:
   real_data_only: true
+  modules:
+    - solar_concentration
+    - solar_tracking
+    - lair_topology
+    - lair_flows
+    - duel_scheduler
+    - deadline_scheduler
   description: >
     Every numeric result is computed from the real deterministic domain models
-    in src/the_man_with_the_golden_gun/ (solar_concentration, lair_topology,
-    duel_scheduler). No mock framework anywhere.
+    listed under `modules` above, which live in
+    src/the_man_with_the_golden_gun/. No mock framework anywhere.
 
 artifact_expectations:
   script_artifacts:
     - output/data/solex_outcome.json
     - output/data/manuscript_variables.json
     - output/figures/solex_yield.png
+    - output/figures/solex_daily.png
     - output/figures/lair_topology.png
     - output/figures/duel_schedule.png
 

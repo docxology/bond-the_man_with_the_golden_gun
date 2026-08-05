@@ -45,19 +45,28 @@ The package has three potential nondeterminism surfaces, and each is closed:
 No metric in this manuscript is typed by hand. Each is a double-brace
 placeholder resolved by
 `src/the_man_with_the_golden_gun/manuscript_variables.py::generate_variables()`
-from `manuscript/config.yaml` plus a live call into the domain models. Three
+from `manuscript/config.yaml` plus a live call into the domain models. Four
 gates hold that discipline in place:
 
 * `tests/test_manuscript_variables.py::test_all_manuscript_tokens_are_generated`
-  scans every numbered section and fails if a section cites a token the
-  generator does not produce.
-* `scripts/z_generate_manuscript_variables.py` fails if a resolved section
-  still contains an unsubstituted token.
+  scans every file the hydrator writes — the numbered sections and the Pandoc
+  preamble, both drawn from `manuscript_variables.manuscript_sources()` — and
+  fails if one cites a token the generator does not produce.
+* `scripts/z_generate_manuscript_variables.py` fails if a resolved file still
+  contains an unsubstituted token.
 * `manuscript_variables.verify_declared_experiment()` recomputes every value
-  the config restates — the receiver aperture, the lair entry and exit, the
-  maximum duel bounty, the extended lair's edge-disjoint route count, and the
-  whole deadline book — and raises if the config and the code disagree. A stale
-  config therefore fails the build rather than narrating a wrong number.
+  the config's `experiment` block declares — the codename, the irradiance, the
+  receiver aperture, the solar-site geometry, the lair entry and exit, the
+  maximum duel bounty, the extended lair, and the whole deadline book — and
+  raises if the config and the code disagree. It also raises on a declared key
+  it has no recomputation for, so the checked surface cannot quietly shrink
+  below the block. A stale config therefore fails the build rather than
+  narrating a wrong number.
+* `declarations.verify_claim_ledger()` recomputes every value in
+  `data/claim_ledger.yaml` at its recorded precision and checks that each
+  claim's cited evidence symbol and test file exist. It runs during token
+  generation because the config declares the ledger path, so the ledger is a
+  checked restatement of the code rather than a parallel copy of the numbers.
 
 ## Test and gate discipline
 

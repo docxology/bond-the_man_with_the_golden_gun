@@ -70,11 +70,16 @@ gates:
   coverage_fail_under: 90
   mock_frameworks_allowed: 0
 
-# Declared canonical inputs. Every key in this block is *verified* at token
-# generation time by
-# `manuscript_variables.verify_declared_experiment()`: each declaration is
-# recomputed from the domain models and a disagreement raises, so this block is
-# a checked restatement rather than inert documentation.
+# Declared canonical inputs. Every key in this block is verified at token
+# generation time by `manuscript_variables.verify_declared_experiment()`: each
+# declared value is recomputed from the domain models and a disagreement
+# raises, so this block is a checked restatement rather than inert
+# documentation. The check is exhaustive by construction — the verifier
+# enumerates the leaf keys actually present here and raises if it finds one it
+# has no recomputation for, so adding an unverifiable key breaks the build
+# rather than quietly widening the unchecked surface. `data_ledger` is verified
+# by recomputing every claim in the file it names (see
+# `declarations.verify_claim_ledger`), not merely by checking the path exists.
 experiment:
   codename: "SOLEX"
   daily_dni_w_per_m2: 1000.0

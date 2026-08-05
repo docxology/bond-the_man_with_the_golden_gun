@@ -39,11 +39,12 @@ keywords:
 <!--
 PROJECT BOND · the_man_with_the_golden_gun (mission SOLEX) — Pandoc preamble.
 
-This file carries document metadata only; it is deliberately NOT part of the
-numbered section set (`[0-9]*.md`) that `manuscript_variables.write_resolved_tree`
-hydrates and that the live token gate scans. The one {{BOND_TITLE}} token above
-is resolved by the same generator when the preamble is passed through the
-token substitution step of a full render.
+This file carries document metadata only, so it is not a numbered section — but
+it does carry a token, so it IS hydrated and IS gated. `manuscript_sources()`
+returns the numbered sections plus this file; `write_resolved_tree` hydrates
+every file it returns into `output/manuscript/`, and the live token gate scans
+the same set. Before that was fixed, the title token above was hydrated by
+nothing and scanned by nothing, and would have rendered as literal braces.
 
 Section order for a combined render:
 

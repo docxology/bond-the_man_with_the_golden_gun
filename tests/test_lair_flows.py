@@ -133,9 +133,17 @@ def test_min_cut_interior_reachable() -> None:
     graph = build_lair_graph(
         ["a", "b", "c", "d", "e", "f", "t"],
         [
-            ("a", "b"), ("a", "c"), ("a", "d"),
-            ("b", "e"), ("b", "f"), ("c", "e"), ("c", "f"),
-            ("d", "e"), ("d", "f"), ("e", "t"), ("f", "t"),
+            ("a", "b"),
+            ("a", "c"),
+            ("a", "d"),
+            ("b", "e"),
+            ("b", "f"),
+            ("c", "e"),
+            ("c", "f"),
+            ("d", "e"),
+            ("d", "f"),
+            ("e", "t"),
+            ("f", "t"),
         ],
     )
     assert edge_connectivity(graph, "a", "t") == 2.0

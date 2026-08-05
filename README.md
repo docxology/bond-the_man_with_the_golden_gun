@@ -19,7 +19,7 @@ Local-only working tree: **no remote, never push.**
 ## Modules
 
 Six pure domain modules (standard library only — no `bond_api`, no
-`infrastructure`), plus one adapter and three presentation modules.
+`infrastructure`), plus one adapter and four presentation modules.
 
 | Module | What it computes |
 | --- | --- |
@@ -30,7 +30,8 @@ Six pure domain modules (standard library only — no `bond_api`, no
 | `duel_scheduler.py` | The appointment book as half-open intervals: conflict detection, weighted-interval-scheduling maximum bounty, earliest-finish maximum count, and `active_at` |
 | `deadline_scheduler.py` | Unit-time bounty contracts with deadlines: one matroid greedy with a path-compressed union–find slot lookup, viewed as both a maximum profit and a slot assignment |
 | `mission.py` | The **only** module importing `bond_api`: implements the frozen `MissionProvider` and registers the film's gadgets |
-| `manuscript_variables.py` | Token hydration from `manuscript/config.yaml` plus live domain calls, and the config-versus-code cross-check that raises on drift |
+| `manuscript_variables.py` | Token hydration from `manuscript/config.yaml` plus live domain calls, and the config-versus-code cross-check that raises on drift (including on a declared key it cannot verify) |
+| `declarations.py` | Recomputes every claim in `data/claim_ledger.yaml` and every declaration in `experiment_plan.yaml` / `domain_profile.yaml` from the models, and raises on disagreement |
 | `figures.py` | The four deterministic concept figures and the `FIGURES` registry binding them to the manuscript |
 | `mission_cli.py` | Renders one lifecycle phase (or all five) as deterministic JSON |
 

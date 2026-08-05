@@ -24,7 +24,7 @@ coverage gate on `src/`.
 | --- | --- |
 | `solar_concentration.py`, `solar_tracking.py`, `lair_topology.py`, `lair_flows.py`, `duel_scheduler.py`, `deadline_scheduler.py` | Pure domain core — standard library only, **no** `bond_api` and **no** `infrastructure` imports; importable standalone if the path dependency ever fails |
 | `mission.py` | The single adapter implementing the frozen `MissionProvider`; the only module in `src/` that imports `bond_api` |
-| `manuscript_variables.py`, `figures.py`, `mission_cli.py` | Presentation: token hydration and config verification, deterministic figures, CLI output shaping |
+| `manuscript_variables.py`, `declarations.py`, `figures.py`, `mission_cli.py` | Presentation: token hydration, declared-fact verification (config, claim ledger, YAML overlays), deterministic figures, CLI output shaping |
 | `scripts/` | Thin orchestrators — argv forwarding and I/O only; may import `src/` and `bond_api` |
 
 The orchestrator discovers the provider by slug
@@ -65,18 +65,33 @@ live calls into the domain models, through
 `output/data/manuscript_variables.json` and the resolved tree to
 `output/manuscript/`, and exits non-zero if any placeholder survives.
 
-Three gates hold this in place:
+Five gates hold this in place:
 
 * `tests/test_manuscript_variables.py::test_all_manuscript_tokens_are_generated`
-  — every placeholder in a numbered section must be a key the generator
-  produces, and the scan set is asserted non-empty so the gate cannot pass
-  vacuously.
-* `manuscript_variables.verify_declared_experiment()` — every canonical fact the
-  config restates (receiver aperture, lair entry/exit, maximum duel bounty,
-  edge-disjoint route count, the whole deadline book) is recomputed from the
-  models and raises on disagreement.
+  — every placeholder in a hydrated file must be a key the generator produces.
+  The scanned set comes from `manuscript_sources()`, the same function
+  `write_resolved_tree()` writes from (numbered sections **plus**
+  `preamble.md`), and is asserted non-empty, so the gate can neither pass
+  vacuously nor miss a file that is hydrated.
+* `manuscript_variables.verify_declared_experiment()` — every leaf key the
+  config's `experiment` block declares is recomputed from the models and raises
+  on disagreement, and a declared key with no recomputation raises too, so the
+  check cannot silently cover less than the block.
+* `declarations.verify_claim_ledger()` — every value in `data/claim_ledger.yaml`
+  is recomputed at its recorded precision, its cited evidence symbol and test
+  file must exist, and the ledger's claim set must equal the recomputation
+  registry in both directions. Runs during token generation, because the config
+  declares the ledger path.
+* `tests/test_declarations.py` — `experiment_plan.yaml` and
+  `domain_profile.yaml` are checked against `DOMAIN_MODULES`, the `FIGURES`
+  registry, the canonical inputs, the ledger claim ids, and the coverage gate.
 * `tests/test_mission.py::test_manuscript_config_objectives_match_the_brief` —
-  the config's mission objectives must equal the provider's brief verbatim.
+  the config's mission objectives must equal the provider's brief verbatim
+  (and `test_codename_constant_is_bound_to_the_pure_layer` binds
+  `declarations.MISSION_CODENAME` to `mission.CODENAME`).
+
+Each of those gates ships with a positive control: a test that tampers with one
+declaration in a temporary copy and asserts the verifier goes red.
 
 ## Usage
 

@@ -74,7 +74,8 @@ fails.
 
 ## Editing the manuscript
 
-Numbered sections (`[0-9]*.md`) are token-hydrated and gate-scanned. The
+Numbered sections (`[0-9]*.md`) and `preamble.md` are token-hydrated and
+gate-scanned — the writer and the gate share `manuscript_sources()`. The
 canonical section set is `00_abstract`, `01_introduction`, `02_methodology`,
 `03_results`, `04_conclusion`, `05_experimental_setup`, `06_reproducibility`,
 `07_scope_and_related_work`, `08_appendix`, `99_references`, plus
@@ -88,7 +89,13 @@ canonical section set is `00_abstract`, `01_introduction`, `02_methodology`,
   a citation exists as stated, remove it rather than ship it.
 * Anything the config restates about the domain is verified by
   `verify_declared_experiment()`; if you change a canonical fixture, change the
-  config too or the build will raise.
+  config too or the build will raise. Adding a key to the `experiment` block
+  also means adding its recomputation to `declarations.experiment_expectations()`
+  — an unverifiable declaration raises rather than passing.
+* The same holds for `data/claim_ledger.yaml`, `experiment_plan.yaml`, and
+  `domain_profile.yaml`: they are checked restatements, not notes. A new claim
+  needs an entry in `declarations.CLAIM_RECOMPUTERS`; a new module or figure
+  must land in the overlays or `tests/test_declarations.py` goes red.
 
 ## Gate checklist before "done"
 

@@ -23,6 +23,7 @@ scripts/                     thin argv-forwarding orchestrators
    │                          │
    ├─► figures.py             │
    ├─► manuscript_variables.py│
+   ├─► declarations.py        │
    │        │                 │
    └────────┴─────────────────┴──► domain core (stdlib only)
                                      solar_concentration.py
@@ -187,9 +188,24 @@ sort-keyed JSON dump, so provenance changes if and only if the inputs change.
 `{TOKEN}` map. Two things make it more than a formatter: `generate_variables()`
 calls the real solvers rather than reading stored numbers, and
 `verify_declared_experiment()` recomputes every value `manuscript/config.yaml`
-restates and raises on disagreement — so a stale config fails the build.
-`write_resolved_tree()` substitutes across `manuscript/[0-9]*.md`, leaving
-unresolved placeholders verbatim so the gate can see them.
+restates and raises on disagreement — so a stale config fails the build. The
+check is exhaustive by construction: it enumerates the leaf keys present in the
+`experiment` block and raises on any key it has no recomputation for.
+`manuscript_sources()` names the files carrying tokens (the numbered sections
+plus `preamble.md`); `write_resolved_tree()` hydrates exactly that set and the
+live gate scans exactly that set, so hydration and gating cannot diverge.
+Unresolved placeholders are left verbatim so the gate can see them.
+
+**`declarations.py`** owns the package's self-description and the verification
+of the YAML files that restate it: `DOMAIN_MODULES`, the mission codename, the
+claim-recomputation registry, and `verify_claim_ledger` /
+`verify_experiment_plan` / `verify_domain_profile`. Every value in
+`data/claim_ledger.yaml`, `experiment_plan.yaml` and `domain_profile.yaml` is
+recomputed here from the domain models and compared, including both directions
+of the claim set (no unrecomputed claim, no orphaned recomputation) and the
+existence of each claim's cited evidence symbol and test file. The ledger runs
+during token generation (`config.yaml` declares its path); the two overlays are
+gated by `tests/test_declarations.py`.
 
 **`figures.py`** renders the four concept figures under `output/figures/` with
 the `Agg` backend forced at import. The `FIGURES` registry is the single source
@@ -219,11 +235,12 @@ Every script is argv forwarding plus I/O. None contains domain logic.
 
 ```
 manuscript/config.yaml ─┐
-                        ├─► verify_declared_experiment()  ── raises on drift
-domain core ────────────┘
+data/claim_ledger.yaml ─┼─► verify_declared_experiment()  ── raises on drift
+domain core ────────────┘   (+ verify_claim_ledger)
         │
         ├─► generate_variables() ─► output/data/manuscript_variables.json
-        │                        └─► output/manuscript/*.md   (tokens resolved)
+        │                        └─► output/manuscript/*.md   (tokens resolved,
+        │                            numbered sections + preamble.md)
         │
         ├─► run_domain() ─► MissionOutcome ─► output/data/solex_outcome.json
         │

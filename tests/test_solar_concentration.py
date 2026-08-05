@@ -95,9 +95,7 @@ def test_optimal_allocation_exact_budget() -> None:
     assert set(chosen) == {"alpha", "bravo", "charlie", "delta", "echo"}
     # budget smaller than largest -> picks highest-reflectivity smaller mirror
     chosen_partial = optimal_mirror_allocation(SOLEX_FIELD, 90.0)
-    assert "echo" not in chosen_partial or sum(
-        m.area_m2 for m in SOLEX_FIELD if m.id in chosen_partial
-    ) <= 90.0
+    assert "echo" not in chosen_partial or sum(m.area_m2 for m in SOLEX_FIELD if m.id in chosen_partial) <= 90.0
 
 
 def test_optimal_allocation_validation() -> None:

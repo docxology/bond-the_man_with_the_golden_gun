@@ -1,9 +1,10 @@
 """Manuscript variable hydration for the SOLEX film package.
 
-Every ``{{TOKEN}}`` in ``manuscript/[0-9]*.md`` resolves through
-:func:`generate_variables`, which reads ``manuscript/config.yaml`` and the
-deterministic domain models. Metrics are never hand-authored in prose — they
-flow through this module so the manuscript cannot drift from the code.
+Every ``{{TOKEN}}`` in the manuscript sources — the numbered sections and
+``preamble.md`` — resolves through :func:`generate_variables`, which reads
+``manuscript/config.yaml`` and the deterministic domain models. Metrics are
+never hand-authored in prose; they flow through this module so the manuscript
+cannot drift from the code.
 
 Consumed by ``scripts/z_generate_manuscript_variables.py`` (thin wrapper); the
 live cross-reference gate lives in ``tests/test_manuscript_variables.py``.
@@ -19,6 +20,13 @@ from typing import Any
 import yaml
 
 from .deadline_scheduler import SOLEX_DEADLINE_JOBS, assign_slots, max_profit_with_deadlines
+from .declarations import (
+    DOMAIN_MODULES,
+    MISSION_CODENAME,
+    compare_declaration,
+    experiment_expectations,
+    verify_claim_ledger,
+)
 from .duel_scheduler import (
     CANONICAL_DUELS,
     earliest_finish_schedule,
@@ -68,22 +76,16 @@ __all__ = [
     "DOMAIN_MODULES",
     "generate_variables",
     "load_manuscript_config",
+    "manuscript_sources",
     "verify_declared_experiment",
 ]
 
-#: The pure domain modules of the SOLEX core, in dependency order. Used for the
-#: ``{{NUM_DOMAIN_MODULES}}`` token so the manuscript's module count is derived
-#: from a single list rather than counted by hand in prose.
-DOMAIN_MODULES: tuple[str, ...] = (
-    "solar_concentration",
-    "solar_tracking",
-    "lair_topology",
-    "lair_flows",
-    "duel_scheduler",
-    "deadline_scheduler",
-)
-
 PACKAGE_ROOT = Path(__file__).resolve().parents[2]
+
+#: Manuscript files hydrated by :func:`write_resolved_tree` and scanned by the
+#: live token gate: the numbered sections plus the Pandoc preamble, which also
+#: carries a ``{{TOKEN}}`` in its front matter.
+MANUSCRIPT_SOURCE_GLOBS: tuple[str, ...] = ("[0-9]*.md", "preamble.md")
 DEFAULT_CONFIG_PATH = PACKAGE_ROOT / "manuscript" / "config.yaml"
 
 #: Fixed build timestamp for byte-deterministic outputs (no wall-clock).
@@ -138,65 +140,79 @@ def _mismatch(label: str, declared: object, computed: object) -> str:
     return f"manuscript config declares {label}={declared!r} but the domain model computes {computed!r}"
 
 
-def verify_declared_experiment(config: dict[str, Any]) -> tuple[str, ...]:
-    """Cross-check the config's ``experiment`` declarations against the models.
+def _declared_leaf_paths(experiment: dict[str, Any]) -> set[str]:
+    """Dotted paths of every leaf declaration in the ``experiment`` block.
 
-    ``manuscript/config.yaml`` restates a handful of canonical facts (receiver
-    aperture, lair entry/exit, the maximum duel bounty, the extended lair's
-    edge-disjoint route count, and the deadline book). Those restatements are
-    only worth carrying if they are *load-bearing*: this function recomputes
-    each one from the domain models and raises when the config disagrees, so a
-    stale config fails the build instead of silently narrating a wrong number.
+    A nested mapping contributes one path per sub-key; anything else (scalar or
+    list) is itself a leaf. This is what makes the completeness gate below
+    exhaustive rather than a hand-maintained list that can fall behind.
+    """
+    paths: set[str] = set()
+    for key, value in experiment.items():
+        if isinstance(value, dict):
+            paths.update(f"{key}.{sub}" for sub in value)
+        else:
+            paths.add(key)
+    return paths
+
+
+def _leaf_value(experiment: dict[str, Any], path: str) -> Any:
+    value: Any = experiment
+    for part in path.split("."):
+        value = value[part]
+    return value
+
+
+def verify_declared_experiment(config: dict[str, Any]) -> tuple[str, ...]:
+    """Cross-check *every* ``experiment`` declaration in the config.
+
+    ``manuscript/config.yaml`` restates canonical facts that live in code (the
+    mission codename, the DNI, the receiver aperture, the solar-site geometry,
+    the lair entry/exit rooms, the maximum duel bounty, the extended lair, the
+    deadline book, and the claim-ledger path). Those restatements are only
+    worth carrying if they are *load-bearing*, so this function:
+
+    1. recomputes each declared value from the domain models and raises on
+       disagreement — including the whole claim ledger, via
+       :func:`declarations.verify_claim_ledger`; and
+    2. refuses to pass when the block declares a key it does not know how to
+       verify, which is what makes "every key in this block is checked" an
+       enforced invariant instead of a comment.
 
     Args:
         config: A parsed ``manuscript/config.yaml`` mapping.
 
     Returns:
-        The names of the declarations that were present and verified. An empty
-        tuple means the config declared none of them (the fallback path used by
-        the minimal configs in the test-suite).
+        The dotted paths that were present and verified. An empty tuple means
+        the config has no ``experiment`` mapping at all (the fallback path used
+        by the minimal configs in the test-suite).
 
     Raises:
-        ValueError: on the first declaration that disagrees with the models.
+        ValueError: on the first declaration that disagrees with the models, or
+            if any declared key has no verification.
     """
     experiment = config.get("experiment")
     if not isinstance(experiment, dict):
         return ()
 
+    expectations = experiment_expectations()
+    declared = _declared_leaf_paths(experiment)
+    verifiable = set(expectations) | {"deadline_jobs", "data_ledger"}
+    unverified = sorted(declared - verifiable)
+    if unverified:
+        raise ValueError("manuscript config declares experiment key(s) with no verification: " + ", ".join(unverified))
+
     checked: list[str] = []
+    for path in sorted(declared & set(expectations)):
+        compare_declaration(
+            "manuscript config", f"experiment.{path}", _leaf_value(experiment, path), expectations[path]
+        )
+        checked.append(path)
 
-    if "receiver_area_m2" in experiment:
-        declared_area = float(experiment["receiver_area_m2"])
-        if declared_area != SOLEX_RECEIVER_AREA_M2:
-            raise ValueError(_mismatch("experiment.receiver_area_m2", declared_area, SOLEX_RECEIVER_AREA_M2))
-        checked.append("receiver_area_m2")
-
-    for key, computed_room in (("lair_entry", CANONICAL_ENTRY), ("lair_exit", CANONICAL_EXIT)):
-        if key in experiment:
-            if str(experiment[key]) != computed_room:
-                raise ValueError(_mismatch(f"experiment.{key}", experiment[key], computed_room))
-            checked.append(key)
-
-    if "duel_max_bounty" in experiment:
-        declared_bounty = float(experiment["duel_max_bounty"])
-        computed_bounty = max_bounty_schedule(CANONICAL_DUELS)[0]
-        if declared_bounty != computed_bounty:
-            raise ValueError(_mismatch("experiment.duel_max_bounty", declared_bounty, computed_bounty))
-        checked.append("duel_max_bounty")
-
-    extended = experiment.get("extended_lair")
-    if isinstance(extended, dict) and "edge_disjoint_routes" in extended:
-        declared_routes = float(extended["edge_disjoint_routes"])
-        ext_graph, ext_entry, ext_exit = build_extended_lair()
-        computed_routes = edge_connectivity(ext_graph, ext_entry, ext_exit)
-        if declared_routes != computed_routes:
-            raise ValueError(
-                _mismatch("experiment.extended_lair.edge_disjoint_routes", declared_routes, computed_routes)
-            )
-        checked.append("extended_lair.edge_disjoint_routes")
-
-    declared_jobs = experiment.get("deadline_jobs")
-    if isinstance(declared_jobs, list):
+    if "deadline_jobs" in declared:
+        declared_jobs = experiment["deadline_jobs"]
+        if not isinstance(declared_jobs, list):
+            raise ValueError(_mismatch("experiment.deadline_jobs", declared_jobs, "a list of job mappings"))
         declared_book = tuple(
             (str(job["id"]), int(job["deadline"]), float(job["profit"]))
             for job in declared_jobs
@@ -206,6 +222,10 @@ def verify_declared_experiment(config: dict[str, Any]) -> tuple[str, ...]:
         if declared_book != computed_book:
             raise ValueError(_mismatch("experiment.deadline_jobs", declared_book, computed_book))
         checked.append("deadline_jobs")
+
+    if "data_ledger" in declared:
+        verify_claim_ledger(PACKAGE_ROOT / str(experiment["data_ledger"]))
+        checked.append("data_ledger")
 
     return tuple(checked)
 
@@ -275,7 +295,7 @@ def generate_variables(
 
     return {
         "BOND_TITLE": str(paper.get("title", "The Man with the Golden Gun: SOLEX")),
-        "BOND_CODENAME": "SOLEX",
+        "BOND_CODENAME": MISSION_CODENAME,
         "SOLEX_FIELD_AREA": f"{sum(m.area_m2 for m in SOLEX_FIELD):.1f}",
         "SOLEX_DNI": f"{dni_peak:.0f}",
         "SOLEX_OPTICAL_POWER_KW": f"{optical_kw:.1f}",
@@ -362,23 +382,40 @@ def resolve_text(text: str, variables: dict[str, str]) -> str:
     return _TOKEN_RE.sub(_sub, text)
 
 
+def manuscript_sources(source_dir: str | Path | None = None) -> list[Path]:
+    """Every manuscript file that carries ``{{TOKEN}}`` placeholders.
+
+    One function serves both the writer (:func:`write_resolved_tree`) and the
+    live token gate in the test-suite, so the set that gets hydrated and the
+    set that gets scanned cannot diverge — which is exactly how
+    ``preamble.md``'s ``{{BOND_TITLE}}`` survived unhydrated and ungated until
+    an audit found it.
+    """
+    src = Path(source_dir) if source_dir is not None else PACKAGE_ROOT / "manuscript"
+    found: dict[str, Path] = {}
+    for pattern in MANUSCRIPT_SOURCE_GLOBS:
+        for candidate in src.glob(pattern):
+            found[candidate.name] = candidate
+    return [found[name] for name in sorted(found)]
+
+
 def write_resolved_tree(
     variables: dict[str, str],
     source_dir: str | Path | None = None,
     out_dir: str | Path | None = None,
 ) -> list[Path]:
-    """Substitute tokens across the numbered manuscript sections.
+    """Substitute tokens across every manuscript source file.
 
-    Copies each ``manuscript/[0-9]*.md`` into ``out_dir`` (default
+    Copies each file returned by :func:`manuscript_sources` (the numbered
+    sections plus ``preamble.md``) into ``out_dir`` (default
     ``output/manuscript/``) with every ``{{TOKEN}}`` replaced, and returns the
     written paths. Unresolved tokens are left verbatim so the live
     cross-reference test can detect drift.
     """
-    src = Path(source_dir) if source_dir is not None else PACKAGE_ROOT / "manuscript"
     out = Path(out_dir) if out_dir is not None else PACKAGE_ROOT / "output" / "manuscript"
     out.mkdir(parents=True, exist_ok=True)
     written: list[Path] = []
-    for section in sorted(src.glob("[0-9]*.md")):
+    for section in manuscript_sources(source_dir):
         target = out / section.name
         target.write_text(resolve_text(section.read_text(encoding="utf-8"), variables), encoding="utf-8")
         written.append(target)

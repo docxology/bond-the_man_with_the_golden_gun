@@ -1,85 +1,85 @@
 # TODO.md — the_man_with_the_golden_gun (SOLEX)
 
-Project BOND film package · The Man with the Golden Gun (1974) · mission
+PROJECT BOND film package · The Man with the Golden Gun (1974) · mission
 codename **SOLEX**. Local-only working tree (no remote, never push).
 
-## Done (phase-2 conversion)
+This file lists **work that is still open**. Completed build history is not
+kept here — it is in the git log and in the shipped code, which is the honest
+record. What follows is either genuinely undone or a declared integration point
+waiting on another package.
 
-- [x] Stripped the exemplar scaffold (src/scripts/tests/docs/manuscript
-      vendored template resources removed; metadata rewritten for this film).
-- [x] Pure domain core under `src/the_man_with_the_golden_gun/`:
-  - [`solar_concentration.py`](src/the_man_with_the_golden_gun/solar_concentration.py) —
-    mirror-array → heat-output yield model (field optical power, thermal
-    output, concentration ratio, greedy optimal mirror-budget allocation).
-  - [`lair_topology.py`](src/the_man_with_the_golden_gun/lair_topology.py) —
-    funhouse rooms/mirrors as an undirected graph: BFS escape route,
-    reachability, Tarjan cut vertices, exact entry→exit bottleneck rooms.
-  - [`duel_scheduler.py`](src/the_man_with_the_golden_gun/duel_scheduler.py) —
-    bounty appointment book: conflict detection, weighted interval scheduling
-    (max-bounty DP), earliest-finish greedy, `active_at`.
-- [x] Frozen protocol integration:
-  - `[tool.uv.sources] bond-api` path dependency wired in `pyproject.toml`.
-  - [`mission.py`](src/the_man_with_the_golden_gun/mission.py) implements the
-    frozen bond_api `MissionProvider` (film, brief, recon, plan, execute,
-    debrief) and registers domain gadgets with `bond_api.registry.GadgetRegistry`.
-  - Pure domain modules importable standalone (no `bond_api` import).
-- [x] Thin per-phase CLIs in `scripts/` (brief/recon/plan/execute/debrief +
-      `run_mission.py` all) + `00_preflight.py`, `generate_artifacts.py`,
-      `z_generate_manuscript_variables.py`.
-- [x] `manuscript_variables.py` — `{{TOKEN}}` hydration from `config.yaml` +
-      deterministic domain models; live cross-reference gate in tests.
-- [x] `figures.py` — three deterministic concept figures (solar yield, lair
-      topology, duel schedule) under `output/figures/`.
-- [x] Manuscript rewritten for the film (config identity + SOLEX mission block,
-      numbered `{{TOKEN}}` sections, figures).
-- [x] Zero-mock real-data test suite: 72 tests, **100% line+branch** on `src/`.
-- [x] Gates green: pytest `--cov-fail-under=90`, ruff check+format, mypy,
-      zero lineage strings, git clean.
+## Blocked on other BOND packages
 
-## Done (phase-4 deep improvement)
+- [ ] **Provenance persistence** (`bond-utilities`, `mission_io`). Executed
+      outcomes currently carry a `Provenance` record inside the protocol object
+      and are written to `output/data/solex_outcome.json`, but nothing persists
+      them to a shared provenance store.
+      *Integration point:* `mission_io.record_provenance_outcome`.
+      *Acceptance:* a `scripts/` record step produces a byte-identical record
+      for the canonical inputs across two runs, asserted in
+      `tests/test_scripts_smoke.py`.
+      *Status:* waiting on `bond-utilities` shipping `mission_io`.
 
-- [x] Added **three new tested algorithm modules** (real math, deterministic):
-  - [`solar_tracking.py`](src/the_man_with_the_golden_gun/solar_tracking.py) —
-    Spencer declination / equation of time, daylight window, Duffie–Beckman
-    daily extraterrestrial + clear-sky insolation, field daily energy, and the
-    daily beam-flux profile.
-  - [`lair_flows.py`](src/the_man_with_the_golden_gun/lair_flows.py) —
-    Edmonds–Karp max flow (edge connectivity), min-cut mirror walls,
-    edge-disjoint-route decomposition, Dijkstra cost-aware escape, extended
-    10-room lair fixture (3 edge-disjoint routes).
-  - [`deadline_scheduler.py`](src/the_man_with_the_golden_gun/deadline_scheduler.py) —
-    unit-time deadline jobs; greedy (union–find) max-profit selection and slot
-    assignment (canonical book → profit 18).
-- [x] Deepened `mission.py` **internals** (public `MissionProvider` /
-  `GADGETS()` / `register_gadgets` shape unchanged): 6 objectives, 6 assets,
-  7 plan steps, `run_domain` now returns `solar/tracking/lair/flows/duel/
-  deadline/integrated`; gadgets grew to 22.
-- [x] Extended `manuscript_variables.py` with 15 new tokens (SOLAR_*, LAIR_EXT_*,
-      DUEL_DEADLINE_*) driven from `manuscript/config.yaml` experiment block.
-- [x] Added a fourth deterministic figure (`solex_daily.png`, daily beam flux)
-      referenced as `{#fig:solex_daily}`.
-- [x] Manuscript methodology/results/conclusion/abstract + appendix deepened;
-      `references.bib` extended with real sources: Duffie & Beckman (2013),
-      Michalsky (1988), Cormen et al. (2009), Spencer (1971).
-- [x] Tests extended: 3 new test files; suite now **111 tests, 100% line+branch**
-      on `src/`, zero mocks, zero skips.
+- [ ] **Coordinator registration.** The provider is already discoverable by slug
+      through `bond_api.discovery` and `scripts/00_preflight.py` proves it, so
+      no rework is expected — but the round trip through the coordinator's
+      reconcile step is unexercised from this side.
+      *Acceptance:* the coordinator lists SOLEX with its 22 gadgets and the
+      package's own preflight and the coordinator's view agree.
+      *Status:* waiting on `bond-coordinator`.
 
-## Integration points (declared)
+## Open domain work
 
-- `mission_io.record_provenance_outcome` (bond-utilities): the SOLEX outcome
-  currently carries `Provenance` inside the protocol object; once
-  bond-utilities ships, add a script that persists each executed outcome to a
-  provenance store via `mission_io.record_provenance_outcome`.
-  Acceptance: `scripts/` gains a record step producing a byte-identical record
-  for a fixed seed, verified in `test_scripts_smoke.py`.
-- `bond-coordinator`: when the fleet coordinator lands, the SOLEX provider is
-  already discoverable by slug via `bond_api.discovery` — no rework expected.
+- [ ] **Multi-day DNI sweep.** `solar_tracking` computes daily clear-sky energy
+      for one fixed day of year; there is no seasonal profile. A sweep over the
+      year would turn the single `SOLAR_FIELD_DAILY_KWH` figure into an annual
+      yield curve, which is the number an operator would actually care about.
+      Needs: a `field_annual_energy_kwh`, a fifth figure, and tokens for the
+      annual total and the solstice-to-solstice ratio.
 
-## Not done / future
+- [ ] **Incidence-angle losses.** The optical chain applies a flat
+      `incidence_factor` defaulting to 1.0, so mirror aim geometry contributes
+      nothing. Adding a real cosine loss per heliostat position would make the
+      concentration ratio a function of time of day rather than a constant.
+      This is the largest single gap between the model and a defensible
+      heliostat calculation, and it is documented as out of scope in
+      `manuscript/07_scope_and_related_work.md` rather than hidden.
 
-- [ ] Optional: multi-Day DNI profile sweep for solar yield (currently a fixed
-      canonical DNI in `manuscript/config.yaml`).
-- [ ] Optional: larger random-lair stress fixtures (deterministic seeded) to
-      scale-test the exact bottleneck solver beyond the 7-room canonical lair.
-- [ ] Optional: tie the mission to a second film package for a cross-package
-      scheduling scenario (duel book shared across two appointment books).
+- [ ] **Larger seeded lair fixtures.** The exact bottleneck solver is
+      `O(V(V+E))` and is exercised only on the 7-room canonical lair. A
+      deterministic generated fixture at 100+ rooms would both scale-test it and
+      let the `articulation_points` fast path be compared against the exact
+      answer on a graph where they visibly differ.
+
+- [ ] **Cross-package scheduling scenario.** The duel and deadline books are
+      self-contained. A scenario sharing one appointment book across two film
+      packages would exercise the orchestrator's multi-package path.
+      Blocked on `bond-orchestrator`.
+
+## Open verification work
+
+- [ ] **Figure content assertions.** `tests/test_figures.py` proves the PNGs are
+      non-empty and byte-reproducible, and that the registry and the manuscript
+      agree in both directions. It does not assert anything about what the
+      images *show* — a plot drawing the wrong series would pass. Pinning a few
+      data-space properties (for example, that the daily-profile curve peaks at
+      solar noon) would close that.
+
+- [ ] **Manuscript render.** The token pipeline is gated end to end, but no test
+      runs Pandoc, so the `{#fig:...}` crossref labels, the citation keys, and
+      the `preamble.md` metadata are verified only by structure, never by an
+      actual build. A render smoke test would catch a broken citation key that
+      the current gates cannot see.
+
+## Deliberately not doing
+
+* **Ray-traced optics, atmospheric attenuation, receiver thermal loss.** Out of
+  scope by design; the lumped model's limits are stated in
+  `manuscript/07_scope_and_related_work.md`.
+* **A higher-accuracy solar position algorithm** (e.g. Michalsky 1988). The
+  Spencer series is accurate to about a tenth of a degree, and nothing reported
+  here is sensitive at that resolution. Implementing an unused precision path
+  would be scaffolding.
+* **Publishing.** This tree is local-only. No remote, no DOI, no archive
+  deposit — the metadata sidecars omit DOI fields rather than carrying
+  placeholders.

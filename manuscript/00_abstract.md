@@ -6,7 +6,8 @@ Man with the Golden Gun* (1974).
 ## Abstract
 
 This dossier documents the deterministic mission software built for the SOLEX
-operation. Six specialist capabilities support the field agent:
+operation. {{NUM_DOMAIN_MODULES}} specialist capabilities support the field
+agent:
 
 1. **Solar concentration yield** — a heliostat-field model that converts a
    mirror array's area and reflectivity into optical power and thermal heat
@@ -27,13 +28,18 @@ operation. Six specialist capabilities support the field agent:
    the deadline-greedy (union–find) algorithm to maximise accepted profit.
 
 All results are computed from real, deterministic domain models with fixed
-seeds and no wall-clock dependence; every metric in this manuscript flows from
+inputs and no wall-clock dependence; every metric in this manuscript flows from
 code, never from hand-authored prose. The canonical SOLEX field converts a
 {{SOLEX_DNI}} W/m² irradiance into a thermal output of {{SOLEX_HEAT_KW}} kW
 (concentration {{SOLEX_CONCENTRATION}}×) and, over a clear-sky solstice day at
 {{SOLAR_LATITUDE}}°N, concentrates {{SOLAR_FIELD_DAILY_KWH}} kWh. The extended
 funhouse has {{LAIR_EXT_EDGE_CONNECTIVITY}} edge-disjoint escape routes (min
-cut {{LAIR_EXT_MIN_CUT_EDGES}} mirror walls), the canonical lair is guarded by
-{{LAIR_NUM_BOTTLENECKS}} bottleneck rooms, the duel book realises a maximum
-bounty of {{DUEL_TOTAL_BOUNTY}}, and the deadline book a maximum profit of
-{{DUEL_DEADLINE_MAX_PROFIT}}.
+cut {{LAIR_EXT_MIN_CUT_EDGES}} mirror walls), while the canonical lair is
+guarded by {{LAIR_NUM_BOTTLENECKS}} bottleneck rooms — redundancy and
+criticality are separate measurements, and the lair's
+{{LAIR_NUM_ARTICULATION}} articulation points are a third. On the duel book the
+two exact schedulers disagree: weighted interval scheduling realises a bounty of
+{{DUEL_TOTAL_BOUNTY}} where the count-maximising earliest-finish greedy
+realises {{DUEL_EARLIEST_FINISH_BOUNTY}}. The deadline book yields a maximum
+profit of {{DUEL_DEADLINE_MAX_PROFIT}} across
+{{DUEL_DEADLINE_NUM_JOBS}} contested contracts.

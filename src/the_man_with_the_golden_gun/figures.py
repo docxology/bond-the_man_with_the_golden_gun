@@ -15,6 +15,7 @@ byte-identical PNGs (a live determinism proof).
 from __future__ import annotations
 
 import os
+from collections.abc import Callable
 from pathlib import Path
 
 os.environ.setdefault("MPLBACKEND", "Agg")
@@ -37,6 +38,8 @@ from .solar_concentration import (  # noqa: E402
 from .solar_tracking import SOLEX_LATITUDE_DEG, solex_daily_profile  # noqa: E402
 
 __all__ = [
+    "FIGURES",
+    "figure_labels",
     "generate_all_figures",
     "plot_daily_solar_profile",
     "plot_duel_schedule",
@@ -45,6 +48,26 @@ __all__ = [
 ]
 
 DEFAULT_FIGURES_DIR = Path(__file__).resolve().parents[2] / "output" / "figures"
+
+#: Registry of every SOLEX figure: ``(pandoc-crossref label, PNG filename)``.
+#:
+#: This is the single source of truth for "which figures exist". The manuscript
+#: cross-reference gate in ``tests/test_figures.py`` asserts that every
+#: ``{#fig:...}`` label used in ``manuscript/[0-9]*.md`` appears here and that
+#: every registered figure is actually referenced, so a figure cannot be added
+#: to the code without landing in the dossier (or removed while prose still
+#: cites it).
+FIGURES: tuple[tuple[str, str], ...] = (
+    ("solex_yield", "solex_yield.png"),
+    ("solex_daily", "solex_daily.png"),
+    ("lair_topology", "lair_topology.png"),
+    ("duel_schedule", "duel_schedule.png"),
+)
+
+
+def figure_labels() -> tuple[str, ...]:
+    """Pandoc-crossref labels of every registered SOLEX figure."""
+    return tuple(label for label, _ in FIGURES)
 
 
 def _ensure_dir(path: Path) -> None:
@@ -160,12 +183,21 @@ def plot_daily_solar_profile(path: str | Path | None = None) -> Path:
     return out
 
 
-def generate_all_figures(output_dir: str | Path | None = None) -> tuple[Path, Path, Path, Path]:
-    """Render all four SOLEX figures into ``output_dir`` (default figures dir)."""
+#: Label -> generator for every registered figure (drives ``generate_all_figures``).
+_GENERATORS: dict[str, Callable[[Path], Path]] = {
+    "solex_yield": plot_solex_yield,
+    "solex_daily": plot_daily_solar_profile,
+    "lair_topology": plot_lair_topology,
+    "duel_schedule": plot_duel_schedule,
+}
+
+
+def generate_all_figures(output_dir: str | Path | None = None) -> tuple[Path, ...]:
+    """Render every figure in :data:`FIGURES` into ``output_dir``.
+
+    Driven by the registry rather than a hand-maintained call list, so adding a
+    figure to :data:`FIGURES` (plus its generator) is the only edit needed.
+    Returns the written paths in registry order.
+    """
     base = Path(output_dir) if output_dir is not None else DEFAULT_FIGURES_DIR
-    return (
-        plot_solex_yield(base / "solex_yield.png"),
-        plot_daily_solar_profile(base / "solex_daily.png"),
-        plot_lair_topology(base / "lair_topology.png"),
-        plot_duel_schedule(base / "duel_schedule.png"),
-    )
+    return tuple(_GENERATORS[label](base / filename) for label, filename in FIGURES)

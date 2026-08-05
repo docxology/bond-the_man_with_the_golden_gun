@@ -2,17 +2,22 @@
 
 from __future__ import annotations
 
+import copy
 import re
+from typing import Any
 
 import pytest
+import yaml
 
 from the_man_with_the_golden_gun.manuscript_variables import (
     DEFAULT_TIMESTAMP,
+    DOMAIN_MODULES,
     PACKAGE_ROOT,
     generate_variables,
     load_manuscript_config,
     resolve_text,
     unresolved_tokens,
+    verify_declared_experiment,
     write_resolved_tree,
 )
 
@@ -84,6 +89,17 @@ def test_generate_variables_non_dict_paper(tmp_path) -> None:  # type: ignore[no
     assert variables["BOND_TITLE"] == "The Man with the Golden Gun: SOLEX"
 
 
+def test_generate_variables_non_dict_mission_and_gates(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    # Malformed `mission` / `gates` blocks fall back to documented defaults
+    # rather than raising: a broken config should still render something
+    # obviously wrong (seed 0) instead of half a manuscript.
+    cfg = tmp_path / "config.yaml"
+    cfg.write_text("mission: [1, 2]\ngates: 'nope'\n", encoding="utf-8")
+    variables = generate_variables(config_path=cfg)
+    assert variables["MISSION_SEED"] == "0"
+    assert variables["COVERAGE_GATE_PCT"] == "90"
+
+
 def test_generate_variables_non_dict_site_fallback(tmp_path) -> None:  # type: ignore[no-untyped-def]
     # Malformed experiment / solar_tracking blocks fall back to site constants.
     cfg = tmp_path / "config.yaml"
@@ -126,7 +142,149 @@ _TOKEN_RE = re.compile(r"\{\{[A-Z0-9_]+\}\}")
 def test_all_manuscript_tokens_are_generated() -> None:
     """Live cross-reference gate: every {{TOKEN}} in prose sections resolves."""
     variables = generate_variables()
-    for section in sorted((PACKAGE_ROOT / "manuscript").glob("[0-9]*.md")):
+    sections = sorted((PACKAGE_ROOT / "manuscript").glob("[0-9]*.md"))
+    assert sections, "no numbered manuscript sections found — the gate would be vacuous"
+    for section in sections:
         for token in _TOKEN_RE.findall(section.read_text(encoding="utf-8")):
             key = token[2:-2]
             assert key in variables, f"{section.name}: {token} not generated"
+
+
+def test_canonical_section_set_is_present() -> None:
+    """The dossier carries every canonical section, not just the ones with tokens."""
+    manuscript = PACKAGE_ROOT / "manuscript"
+    required = {
+        "00_abstract.md",
+        "01_introduction.md",
+        "02_methodology.md",
+        "03_results.md",
+        "04_conclusion.md",
+        "05_experimental_setup.md",
+        "06_reproducibility.md",
+        "07_scope_and_related_work.md",
+        "99_references.md",
+        "preamble.md",
+        "config.yaml",
+        "references.bib",
+        "README.md",
+        "AGENTS.md",
+        "SYNTAX.md",
+    }
+    missing = sorted(name for name in required if not (manuscript / name).is_file())
+    assert not missing, f"missing canonical manuscript files: {missing}"
+
+
+def test_derived_surface_tokens() -> None:
+    """Tokens describing the package's own shape are derived, not hand-set."""
+    variables = generate_variables()
+    assert variables["NUM_DOMAIN_MODULES"] == str(len(DOMAIN_MODULES))
+    assert variables["DOMAIN_MODULE_LIST"].split(", ") == [f"{m}.py" for m in DOMAIN_MODULES]
+    assert variables["NUM_FIGURES"] == "4"
+    assert variables["COVERAGE_GATE_PCT"] == "90"
+    assert variables["PACKAGE_VERSION"] == "0.1.0"
+    assert variables["MISSION_SEED"] == "3"
+    # every declared domain module really exists on disk
+    for module in DOMAIN_MODULES:
+        assert (PACKAGE_ROOT / "src" / "the_man_with_the_golden_gun" / f"{module}.py").is_file()
+
+
+def test_scheduler_comparison_tokens() -> None:
+    """The two duel objectives really do disagree on the canonical book."""
+    variables = generate_variables()
+    assert variables["DUEL_SELECTED"] == "B, C, D"
+    assert variables["DUEL_EARLIEST_FINISH"] == "A, C, D"
+    assert variables["DUEL_NUM_SELECTED"] == variables["DUEL_NUM_EARLIEST_FINISH"] == "3"
+    assert variables["DUEL_TOTAL_BOUNTY"] == "13.0"
+    assert variables["DUEL_EARLIEST_FINISH_BOUNTY"] == "11.0"
+    # greedy mirror-budget allocation under a budget smaller than the field
+    assert variables["SOLEX_BUDGET_M2"] == "200"
+    assert variables["SOLEX_BUDGET_SELECTION"] == "alpha, bravo, echo"
+    assert variables["SOLEX_NUM_MIRRORS"] == "5"
+    assert variables["LAIR_EXT_MIN_CUT_WALLS"] == "Courtyard-Entry, Entry-Hall, Entry-Tunnel"
+
+
+def test_fixture_table_tokens_are_generated_from_the_constants() -> None:
+    """Setup-section tables are rendered from the live fixtures, not transcribed."""
+    from the_man_with_the_golden_gun.deadline_scheduler import SOLEX_DEADLINE_JOBS
+    from the_man_with_the_golden_gun.duel_scheduler import CANONICAL_DUELS
+    from the_man_with_the_golden_gun.solar_concentration import SOLEX_FIELD
+
+    variables = generate_variables()
+
+    mirror_rows = variables["SOLEX_MIRROR_ROWS"].splitlines()
+    assert len(mirror_rows) == len(SOLEX_FIELD)
+    for row, mirror in zip(mirror_rows, SOLEX_FIELD):
+        assert row.startswith(f"| `{mirror.id}` |")
+        assert f"{mirror.area_m2:.1f}" in row
+        assert f"{mirror.reflectivity:.2f}" in row
+
+    duel_rows = variables["DUEL_BOOK_ROWS"].splitlines()
+    assert len(duel_rows) == len(CANONICAL_DUELS)
+    assert duel_rows[0] == "| `A` | [0, 2) | 3 | First_Heel |"
+
+    deadline_rows = variables["DUEL_DEADLINE_BOOK_ROWS"].splitlines()
+    assert len(deadline_rows) == len(SOLEX_DEADLINE_JOBS)
+    assert deadline_rows[0] == "| `A` | 1 | 3 |"
+    # slots available = the latest deadline in the book
+    assert variables["DUEL_DEADLINE_NUM_SLOTS"] == str(max(j.deadline for j in SOLEX_DEADLINE_JOBS))
+    # the book must over-subscribe its slots or the greedy never rejects anything
+    assert int(variables["DUEL_DEADLINE_NUM_JOBS"]) > int(variables["DUEL_DEADLINE_NUM_SLOTS"])
+
+
+def _live_config() -> dict[str, Any]:
+    return copy.deepcopy(load_manuscript_config())
+
+
+def test_declared_experiment_verifies_the_live_config() -> None:
+    """The shipped config declares — and the models confirm — every checked key."""
+    checked = verify_declared_experiment(_live_config())
+    assert set(checked) == {
+        "receiver_area_m2",
+        "lair_entry",
+        "lair_exit",
+        "duel_max_bounty",
+        "extended_lair.edge_disjoint_routes",
+        "deadline_jobs",
+    }
+
+
+def test_declared_experiment_absent_block_checks_nothing() -> None:
+    assert verify_declared_experiment({}) == ()
+    assert verify_declared_experiment({"experiment": [1, 2]}) == ()
+    assert verify_declared_experiment({"experiment": {}}) == ()
+    # a non-mapping extended_lair / non-list deadline_jobs is simply not checked
+    assert verify_declared_experiment({"experiment": {"extended_lair": "nope", "deadline_jobs": 7}}) == ()
+
+
+@pytest.mark.parametrize(
+    ("mutate", "needle"),
+    [
+        (lambda e: e.__setitem__("receiver_area_m2", 6.0), "receiver_area_m2"),
+        (lambda e: e.__setitem__("lair_entry", "Foyer"), "lair_entry"),
+        (lambda e: e.__setitem__("lair_exit", "Roof"), "lair_exit"),
+        (lambda e: e.__setitem__("duel_max_bounty", 99.0), "duel_max_bounty"),
+        (lambda e: e["extended_lair"].__setitem__("edge_disjoint_routes", 2), "edge_disjoint_routes"),
+        (lambda e: e["deadline_jobs"][0].__setitem__("profit", 42.0), "deadline_jobs"),
+        (lambda e: e["deadline_jobs"].pop(), "deadline_jobs"),
+    ],
+)
+def test_declared_experiment_rejects_a_stale_config(mutate, needle: str) -> None:  # type: ignore[no-untyped-def]
+    """Positive control for the config gate: every declaration can actually fail.
+
+    A cross-check that cannot fail is decoration. Each case tampers with one
+    declared value and asserts the mismatch is raised and named.
+    """
+    config = _live_config()
+    mutate(config["experiment"])
+    with pytest.raises(ValueError, match=needle):
+        verify_declared_experiment(config)
+
+
+def test_generate_variables_rejects_a_stale_config(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    """The gate is wired into the real entry point, not just callable in isolation."""
+    config = _live_config()
+    config["experiment"]["duel_max_bounty"] = 1.0
+    stale = tmp_path / "config.yaml"
+    stale.write_text(yaml.safe_dump(config), encoding="utf-8")
+    with pytest.raises(ValueError, match="duel_max_bounty"):
+        generate_variables(config_path=stale)

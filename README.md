@@ -1,85 +1,125 @@
 # The Man with the Golden Gun — SOLEX (Special-Agent Mission Software)
 
 PROJECT BOND film package for **The Man with the Golden Gun** (1974), mission
-codename **SOLEX**. Pure, deterministic mission software over three concepts:
-solar concentration yield, funhouse lair escape topology, and assassin
-duel/bounty scheduling — adapted to the frozen `bond-api` `MissionProvider`
-protocol.
+codename **SOLEX**. Deterministic mission software implementing the film's
+three technical premises as real algorithms — the Solex solar concentrator, the
+mirror-walled funhouse lair, and the assassin's contract book — exposed through
+the frozen `bond-api` `MissionProvider` protocol.
 
 Local-only working tree: **no remote, never push.**
 
-## Mission codename: SOLEX
+## The film as a specification
 
-Six deterministic domain capabilities power the SOLEX operation:
+| Film premise | Software payload |
+| --- | --- |
+| The Solex agitator: a mirror array that turns sunlight into industrially useful heat | Heliostat field yield model plus the solar geometry that sets its daily energy |
+| The funhouse: a mirror-walled maze an agent must escape and a defender wants to seal | Escape routing, bottleneck rooms, edge-disjoint route redundancy, minimum cut, cheapest escape |
+| Scaramanga's contract book: one duel at a time, at a price | Weighted interval scheduling, earliest-finish greedy, and unit-time deadline scheduling |
 
-- **Solar concentration yield** — a mirror-array → heat-output model. The
-  canonical SOLEX mirror field (300 m²) under a canonical DNI converts optical
-  power into a thermal output of **191.6325 kW** at a concentration ratio of
-  **50.1×**, and a greedy allocation optimally spends a mirror-area budget on
-  the highest-reflectivity mirrors.
-- **Solar tracking & daily insolation** — Spencer declination / equation of
-  time, the daylight window, and the Duffie–Beckman clear-sky daily energy
-  (**1441.7 kWh/day**) the field concentrates at the canonical ~8°N site on
-  the solstice (daylight 12.47 h, noon elevation 74.55°).
-- **Funhouse lair escape topology** — the villain's mirror-line lair modelled
-  as an undirected graph; a BFS shortest escape route and the exact bottleneck
-  rooms that guard the vault.
-- **Lair flow analysis** — Edmonds–Karp max flow over the extended lair: 3
-  edge-disjoint escape routes, a min cut of 3 mirror walls, and a Dijkstra
-  cost-aware cheapest escape.
-- **Assassin duel / bounty scheduling** — an appointment book of half-open
-  duels solved by **weighted interval scheduling**: a non-overlapping set that
-  maximises total bounty (`13.0` from the canonical 4 contracts), full conflict
-  detection, and a count-maximising earliest-finish greedy.
-- **Deadline bounty scheduling** — unit-time deadline contracts solved by the
-  greedy union–find algorithm to a maximum accepted profit of `18.0` (5
-  contracts).
+## Modules
+
+Six pure domain modules (standard library only — no `bond_api`, no
+`infrastructure`), plus one adapter and three presentation modules.
+
+| Module | What it computes |
+| --- | --- |
+| `solar_concentration.py` | Mirror-field optical power, thermal output, receiver concentration ratio, and greedy allocation of a mirror-area budget to the highest-reflectivity mirrors |
+| `solar_tracking.py` | Spencer declination and equation of time, solar elevation/azimuth, the daylight window, Duffie–Beckman daily extraterrestrial and clear-sky insolation, field daily energy, and the sunrise-to-sunset beam-flux profile |
+| `lair_topology.py` | The lair as an undirected graph: BFS shortest escape route, reachability, Hopcroft–Tarjan cut vertices, and the exact entry→exit bottleneck rooms (by removal and re-test) |
+| `lair_flows.py` | Edmonds–Karp max flow (edge connectivity), the minimum cut of mirror walls, decomposition into explicit edge-disjoint routes, and Dijkstra cost-aware cheapest escape |
+| `duel_scheduler.py` | The appointment book as half-open intervals: conflict detection, weighted-interval-scheduling maximum bounty, earliest-finish maximum count, and `active_at` |
+| `deadline_scheduler.py` | Unit-time bounty contracts with deadlines: one matroid greedy with a path-compressed union–find slot lookup, viewed as both a maximum profit and a slot assignment |
+| `mission.py` | The **only** module importing `bond_api`: implements the frozen `MissionProvider` and registers the film's gadgets |
+| `manuscript_variables.py` | Token hydration from `manuscript/config.yaml` plus live domain calls, and the config-versus-code cross-check that raises on drift |
+| `figures.py` | The four deterministic concept figures and the `FIGURES` registry binding them to the manuscript |
+| `mission_cli.py` | Renders one lifecycle phase (or all five) as deterministic JSON |
+
+Module-by-module detail: [`docs/architecture.md`](docs/architecture.md).
 
 ## Protocol integration
 
 `src/the_man_with_the_golden_gun/mission.py` implements the **frozen** bond-api
-`MissionProvider` (film, brief, recon, plan, execute, debrief) and registers
-its domain functions/data with the `bond_api.registry.GadgetRegistry`. The
-pure domain modules (`solar_concentration.py`, `lair_topology.py`,
-`duel_scheduler.py`) never import `bond_api` — `mission.py` is the single
-adapter, so the core stays standalone if the path dependency ever fails.
+`MissionProvider` — `film`, `brief`, `recon`, `plan`, `execute`, `debrief` —
+and registers its domain callables and fixtures with
+`bond_api.registry.GadgetRegistry` through a module-level `GADGETS()` and
+`register_gadgets(registry)`. The orchestrator discovers the provider by slug
+via `bond_api.discovery`.
+
+That surface is consumed by `bond-cli`, the coordinator's reconcile step, and
+the orchestrator across packages, so it does not change. The domain core never
+imports `bond_api`, so it stays importable and testable if the path dependency
+ever fails.
 
 ## Layout
 
 ```
 src/the_man_with_the_golden_gun/
-  solar_concentration.py   mirror array -> heat yield + optimal allocation
-  solar_tracking.py        solar position + daily clear-sky insolation
-  lair_topology.py         funhouse rooms/mirrors as graph, escape + bottlenecks
-  lair_flows.py            max-flow / min-cut + cost-aware escape (Dijkstra)
-  duel_scheduler.py        bounty appointment book, weighted interval scheduling
-  deadline_scheduler.py    unit-time deadline bounty scheduling (union-find)
+  solar_concentration.py   mirror array -> optical/thermal yield + budget allocation
+  solar_tracking.py        solar position, daylight window, daily clear-sky energy
+  lair_topology.py         rooms/mirrors as a graph: escape route + bottlenecks
+  lair_flows.py            max flow / min cut / edge-disjoint routes / Dijkstra
+  duel_scheduler.py        bounty appointment book: two exact scheduling objectives
+  deadline_scheduler.py    unit-time deadline contracts (matroid greedy, union-find)
   mission.py               MissionProvider adapter (frozen bond-api protocol)
-  manuscript_variables.py  {{TOKEN}} hydration from config.yaml + domain
-  figures.py               deterministic matplotlib concept figures
-  mission_cli.py           phase-rendering for the CLI wrappers
-scripts/                   thin per-phase CLIs + artifact/manuscript/preflight
-manuscript/                config.yaml + numbered {{TOKEN}} sections
-tests/                     zero-mock real-data suite (100% line+branch on src/)
+  manuscript_variables.py  token hydration + config-vs-code verification
+  figures.py               deterministic matplotlib concept figures + registry
+  mission_cli.py           phase rendering for the CLI wrappers
+scripts/                   thin per-phase CLIs + preflight/artifacts/manuscript
+manuscript/                config.yaml, references.bib, numbered token sections
+docs/                      architecture, testing philosophy, agent instructions
+tests/                     zero-mock real-data suite
 ```
 
 ## Quick start
 
 ```bash
-uv sync --extra dev
-uv run python scripts/00_preflight.py         # protocol discoverability
-uv run python scripts/run_mission.py          # brief..debrief (all phases)
-uv run python scripts/generate_artifacts.py   # output/data/solex_outcome.json + figures
-uv run python scripts/z_generate_manuscript_variables.py  # resolve {{TOKEN}}s
+uv sync --extra dev                                       # resolves the bond-api path dep
+uv run python scripts/00_preflight.py                     # protocol discoverability
+uv run python scripts/run_mission.py                      # brief..debrief (all phases)
+uv run python scripts/generate_artifacts.py               # outcome JSON + figures
+uv run python scripts/z_generate_manuscript_variables.py  # resolve manuscript tokens
 uv run pytest tests/ --cov=src --cov-fail-under=90
 ```
 
+Everything written under `output/` is git-ignored and regenerable.
+
+## Results
+
+Every quantitative result — field yield, daily energy, escape routes, cut
+walls, both duel schedules, deadline profit — is stated in
+[`manuscript/03_results.md`](manuscript/03_results.md), and every number there
+is a token injected from `manuscript_variables.py` rather than typed by hand.
+The complete metric register is
+[`manuscript/08_appendix.md`](manuscript/08_appendix.md). No result is
+duplicated into this README, deliberately: a second copy would drift.
+
 ## Gates
 
-100% line+branch coverage on `src/` (≥90% required), zero-mock real-data
-tests, `ruff check` + `ruff format` + `mypy` clean on `src/` and `scripts/`,
-and zero `template[_]code_project` lineage strings. Git status clean after each
-path-scoped commit.
+| Gate | Rule |
+| --- | --- |
+| Tests | Zero failures, zero skips, no mock framework |
+| Coverage | `pytest --cov=src --cov-fail-under=90`, line **and** branch |
+| Lint / format | `ruff check` and `ruff format --check` clean on `src/` and `scripts/` |
+| Types | `mypy` clean on `src/` and `scripts/` |
+| Tokens | Every manuscript placeholder resolves; the config's restated facts are recomputed and must agree |
+| Figures | Registry and manuscript references agree in both directions; PNGs byte-identical across runs |
+| Lineage | Zero `template_code_project` strings outside docs explaining the exemplar lineage |
+
+The measured test count and coverage from the latest gate run are in
+[`docs/_generated/COUNTS.md`](docs/_generated/COUNTS.md); this README quotes the
+gate rather than the measurement so it cannot go stale.
+
+## Documentation map
+
+| Read | For |
+| --- | --- |
+| [`AGENTS.md`](AGENTS.md) | Package rules, layer contract, build/test/verify commands |
+| [`TODO.md`](TODO.md) | What is actually left to do |
+| [`docs/architecture.md`](docs/architecture.md) | Structure of `src/` and the frozen protocol surface |
+| [`docs/testing_philosophy.md`](docs/testing_philosophy.md) | Why the suite is zero-mock, real-data, deterministic |
+| [`docs/agent_instructions.md`](docs/agent_instructions.md) | Read-first constraints and the gate checklist |
+| [`manuscript/`](manuscript/) | The mission dossier: methods, results, setup, reproducibility, scope |
+| [`STANDALONE.md`](STANDALONE.md) | The fork/standalone contract inherited from the exemplar |
 
 ## License
 

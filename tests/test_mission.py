@@ -43,6 +43,32 @@ def test_brief_objectives_and_assets() -> None:
     assert any(c.kind == "determinism" for c in brief.constraints)
 
 
+def test_manuscript_config_objectives_match_the_brief() -> None:
+    """`manuscript/config.yaml` restates the brief's objectives; they must agree.
+
+    The config block is what the manuscript narrates. Without this binding it
+    could quietly describe a mission the provider no longer runs — which is
+    exactly the drift that left the config listing three objectives while the
+    provider declared six.
+    """
+    from the_man_with_the_golden_gun.manuscript_variables import load_manuscript_config
+
+    declared = tuple(load_manuscript_config()["mission"]["objectives"])
+    assert declared == MissionProvider().brief().objectives
+
+
+def test_gadget_registry_covers_every_domain_module() -> None:
+    """Each domain module contributes at least one gadget under its own prefix.
+
+    Guards the discovery surface: a module can be added to the core and left
+    unexposed to the fleet, and that omission is otherwise silent.
+    """
+    gadgets = GADGETS()
+    for prefix in ("solar_", "lair_", "duel", "deadline_"):
+        assert any(name.startswith(prefix) for name in gadgets), f"no gadget exposed for {prefix!r}"
+    assert len(gadgets) == len(set(gadgets)) == 22
+
+
 def test_plan_steps() -> None:
     plan = MissionProvider().plan(MissionProvider().brief())
     assert len(plan.steps) == 7

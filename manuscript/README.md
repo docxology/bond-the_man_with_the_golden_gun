@@ -11,15 +11,30 @@ Numbered prose sections (`[0-9]*.md`) drive the film's mission dossier. Every
 domain models via `src/the_man_with_the_golden_gun/manuscript_variables.py` —
 never hand-authored in prose.
 
+## Sections
+
+`preamble.md` (Pandoc metadata, not token-gated), then the numbered set:
+`00_abstract`, `01_introduction`, `02_methodology`, `03_results`,
+`04_conclusion`, `05_experimental_setup`, `06_reproducibility`,
+`07_scope_and_related_work`, `08_appendix`, `99_references`. Inputs live in
+`config.yaml` and `references.bib`.
+
 ## Token pipeline
 
-1. `scripts/z_generate_manuscript_variables.py` calls `generate_variables()`.
-2. It writes `output/data/manuscript_variables.json` and the resolved tree to
-   `output/manuscript/`.
-3. The live gate `tests/test_manuscript_variables.py::test_all_manuscript_tokens_are_generated`
-   scans `[0-9]*.md` only and fails if any `{{TOKEN}}` is not generated.
+1. `scripts/z_generate_manuscript_variables.py` calls `generate_variables()`,
+   which reads `config.yaml` and calls the domain models live.
+2. Before producing anything, `verify_declared_experiment()` recomputes every
+   canonical fact `config.yaml` restates and raises if the config disagrees
+   with the code.
+3. It writes `output/data/manuscript_variables.json` and the resolved tree to
+   `output/manuscript/`, exiting non-zero if any placeholder survives.
+4. The live gate
+   `tests/test_manuscript_variables.py::test_all_manuscript_tokens_are_generated`
+   scans `[0-9]*.md` and fails if a section cites a token the generator does
+   not produce. Its scan set is asserted non-empty, so it cannot pass by
+   finding nothing.
 
-To add a token: add it to the `variables` dict in `manuscript_variables.py`,
+To add a token: add it to the returned mapping in `manuscript_variables.py`,
 then reference it in a section by the same name.
 
 ## Figure protocol
@@ -34,4 +49,7 @@ Reference images via Pandoc-crossref labels, never hardcoded numbers:
 | `{#fig:duel_schedule}` | `../output/figures/duel_schedule.png` | `figures.plot_duel_schedule` |
 
 Figures are rendered by `scripts/generate_artifacts.py` into the git-ignored
-`output/figures/`.
+`output/figures/`. The table above is not the source of truth — `figures.FIGURES`
+is, and `tests/test_figures.py` binds it to the sections in both directions: a
+section may not cite an unregistered figure, and a registered figure may not go
+undeclared.

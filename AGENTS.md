@@ -1,12 +1,12 @@
 # AGENTS.md — the_man_with_the_golden_gun (PROJECT BOND · mission SOLEX)
 
 **This is an active PROJECT BOND film package** in the suite under
-`projects/working/bond/`. The Man with the Golden Gun (1974) · mission
-codename **SOLEX**. This is a **local-only** working tree: there is **no
-remote** and it is never pushed. Scope rules are the shared BOND guardrail
-preamble: work only inside this package directory, commit path-scoped inside
-this repo only, no mock framework, deterministic real-data tests, ≥90%
-line+branch coverage on `src/`.
+`projects/working/bond/`. The Man with the Golden Gun (1974) · mission codename
+**SOLEX**. This is a **local-only** working tree: there is **no remote** and it
+is never pushed. Scope rules are the shared BOND guardrail preamble — work only
+inside this package directory, commit path-scoped inside this repository only,
+no mock framework, deterministic real-data tests, and a ≥90% line+branch
+coverage gate on `src/`.
 
 ## Identity
 
@@ -22,47 +22,61 @@ line+branch coverage on `src/`.
 
 | Surface | Rule |
 | --- | --- |
-| `src/the_man_with_the_golden_gun/solar_concentration.py`, `solar_tracking.py`, `lair_topology.py`, `lair_flows.py`, `duel_scheduler.py`, `deadline_scheduler.py` | Pure domain core — stdlib (+ numpy/matplotlib in figures) only, **no** `bond_api` and **no** `infrastructure` imports; importable standalone (fallback if the path dep ever fails) |
-| `src/the_man_with_the_golden_gun/mission.py` | Thin adapter implementing the frozen `MissionProvider` protocol; the only module that imports `bond_api` |
-| `src/the_man_with_the_golden_gun/manuscript_variables.py`, `figures.py`, `mission_cli.py` | Token hydration, deterministic figure generation, CLI output shaping |
-| `scripts/` | Thin orchestrators (argv forwarding); may import `src/` and `bond_api` |
+| `solar_concentration.py`, `solar_tracking.py`, `lair_topology.py`, `lair_flows.py`, `duel_scheduler.py`, `deadline_scheduler.py` | Pure domain core — standard library only, **no** `bond_api` and **no** `infrastructure` imports; importable standalone if the path dependency ever fails |
+| `mission.py` | The single adapter implementing the frozen `MissionProvider`; the only module in `src/` that imports `bond_api` |
+| `manuscript_variables.py`, `figures.py`, `mission_cli.py` | Presentation: token hydration and config verification, deterministic figures, CLI output shaping |
+| `scripts/` | Thin orchestrators — argv forwarding and I/O only; may import `src/` and `bond_api` |
 
-The pure domain modules never import `bond_api`; `mission.py` is the single
-adapter point, and the orchestrator discovers the provider by slug
+The orchestrator discovers the provider by slug
 (`the_man_with_the_golden_gun.mission.MissionProvider`) via
-`bond_api.discovery`. Gadgets (the domain callables/data) are registered into
-the shared `bond_api.registry.GadgetRegistry`.
+`bond_api.discovery`. Gadgets are registered into the shared
+`bond_api.registry.GadgetRegistry`.
 
 ## Domain concepts
 
-* **Solar concentration yield** (`solar_concentration.py`) — mirror-array →
-  heat-output model; field optical power, thermal output, concentration
-  ratio, and greedy optimal mirror-budget allocation.
-* **Solar tracking & daily insolation** (`solar_tracking.py`) — Spencer
-  declination / equation of time, daylight window, Duffie–Beckman daily
-  extraterrestrial and clear-sky insolation, field daily thermal energy.
-* **Funhouse lair escape topology** (`lair_topology.py`) — rooms/mirrors as an
-  undirected graph; BFS shortest escape route, reachability, Tarjan cut
-  vertices, and exact `entry→exit` bottleneck rooms.
-* **Lair flow analysis** (`lair_flows.py`) — Edmonds–Karp max flow (edge
-  connectivity), min-cut mirror walls, edge-disjoint-route decomposition, and
-  Dijkstra cost-aware cheapest escape.
-* **Assassin duel / bounty scheduling** (`duel_scheduler.py`) — appointment
-  book as half-open intervals; conflict detection, weighted interval
-  scheduling (max-bounty DP), earliest-finish greedy, and `active_at`.
-* **Deadline bounty scheduling** (`deadline_scheduler.py`) — unit-time jobs
-  with deadlines and profits; greedy (union–find) max-profit selection and
-  slot assignment.
+* **Solar concentration yield** (`solar_concentration.py`) — field optical
+  power, thermal output, receiver concentration ratio, and greedy mirror-budget
+  allocation (whole mirrors, descending reflectivity).
+* **Solar tracking and daily insolation** (`solar_tracking.py`) — Spencer
+  declination and equation of time, elevation/azimuth, daylight window,
+  Duffie–Beckman daily extraterrestrial and clear-sky insolation, field daily
+  energy, and the daily beam-flux profile.
+* **Funhouse lair escape topology** (`lair_topology.py`) — BFS shortest escape
+  route, reachability, Hopcroft–Tarjan cut vertices, and the exact entry→exit
+  bottleneck rooms. Bottlenecks and articulation points answer *different*
+  questions; do not conflate them.
+* **Lair flow analysis** (`lair_flows.py`) — Edmonds–Karp max flow, the minimum
+  cut of mirror walls, edge-disjoint route decomposition, and Dijkstra
+  cost-aware escape over a 10-room extended fixture.
+* **Duel / bounty scheduling** (`duel_scheduler.py`) — conflict detection,
+  weighted interval scheduling (maximum bounty), earliest-finish greedy
+  (maximum count), and `active_at`. Both objectives are reported because they
+  disagree on the canonical book.
+* **Deadline bounty scheduling** (`deadline_scheduler.py`) — unit-time
+  contracts solved by one matroid greedy with a union–find slot lookup; the
+  profit and the slot assignment are two views of a single run.
 
 ## Manuscript variables
 
-Metrics are **injected** from `manuscript/config.yaml` plus the deterministic
-domain models via `src/the_man_with_the_golden_gun/manuscript_variables.py::generate_variables()`
-— never hand-authored in prose. Run `scripts/z_generate_manuscript_variables.py`
-which writes `output/data/manuscript_variables.json` and the resolved tree to
-`output/manuscript/`. The live cross-reference gate
-(`tests/test_manuscript_variables.py::test_all_manuscript_tokens_are_generated`)
-asserts every `{{TOKEN}}` in `manuscript/[0-9]*.md` resolves.
+Metrics are **injected**, never hand-authored: `manuscript/config.yaml` plus
+live calls into the domain models, through
+`manuscript_variables.generate_variables()`. Run
+`scripts/z_generate_manuscript_variables.py`, which writes
+`output/data/manuscript_variables.json` and the resolved tree to
+`output/manuscript/`, and exits non-zero if any placeholder survives.
+
+Three gates hold this in place:
+
+* `tests/test_manuscript_variables.py::test_all_manuscript_tokens_are_generated`
+  — every placeholder in a numbered section must be a key the generator
+  produces, and the scan set is asserted non-empty so the gate cannot pass
+  vacuously.
+* `manuscript_variables.verify_declared_experiment()` — every canonical fact the
+  config restates (receiver aperture, lair entry/exit, maximum duel bounty,
+  edge-disjoint route count, the whole deadline book) is recomputed from the
+  models and raises on disagreement.
+* `tests/test_mission.py::test_manuscript_config_objectives_match_the_brief` —
+  the config's mission objectives must equal the provider's brief verbatim.
 
 ## Usage
 
@@ -78,53 +92,69 @@ uv run python scripts/plan.py
 uv run python scripts/execute.py
 uv run python scripts/debrief.py
 
-# Artifacts + figures (output/ is git-ignored, regenerable)
+# Artifacts + figures (output/ is git-ignored and regenerable)
 uv run python scripts/generate_artifacts.py
 uv run python scripts/z_generate_manuscript_variables.py
 ```
 
-## Testing & gates
+## Testing and gates
 
 ```bash
-uv sync --extra dev                       # installs bond-api path dep + dev tools
+uv sync --extra dev                       # installs the bond-api path dep + dev tools
 uv run pytest tests/ --cov=src --cov-fail-under=90
 uv run ruff check src/ scripts/
-uv run ruff format src/ scripts/
+uv run ruff format --check src/ scripts/
 uv run mypy src/ scripts/
-rg -n "template[_]code_project" . --glob '!uv.lock' --glob '!.git/**'   # -> zero
+rg -n "template[_]code_project" . --glob '!uv.lock' --glob '!.git/**' --glob '!.venv/**'   # -> zero
 ```
 
-The suite targets 100% line+branch on `src/` with a zero-mock, real-data test
-approach (known-vector assertions on the three domain models, protocol
-conformance, deterministic serialization round-trips, live token gate, and
-subprocess CLI smoke tests).
+Required: zero failures, zero skips, coverage at or above the gate, clean lint
+and types, and no lineage strings. The measured test count and coverage from the
+latest run are recorded in `docs/_generated/COUNTS.md` — read them there rather
+than quoting a figure into prose that will drift.
+
+The suite is zero-mock and real-data: known-vector assertions on every domain
+model, structural-property assertions (pairwise edge-disjointness, cut value
+equal to flow value, reported profit equal to the summed profit of the assigned
+slots), protocol conformance, serialization round-trips, byte-identity checks on
+the rendered figures, the live token gate, and real subprocess runs of the CLI
+scripts. The reasoning behind each choice is in `docs/testing_philosophy.md`.
 
 ## Protocol integration
 
-`[tool.uv.sources] bond-api = { path = "/Users/4d/Documents/GitHub/template/projects/working/bond/bond-api" }`
-is declared in `pyproject.toml`. bond-api is **done and frozen** — do not
-invent new protocol types; implement the frozen `MissionProvider` surface
-(`film`, `brief`, `recon`, `plan`, `execute`, `debrief`) and the 11 frozen
-dataclasses.
+`[tool.uv.sources] bond-api = { path = ".../projects/working/bond/bond-api" }`
+is declared in `pyproject.toml`. bond-api is **done and frozen** — do not invent
+protocol types. Implement the frozen `MissionProvider` surface (`film`,
+`brief`, `recon`, `plan`, `execute`, `debrief`) and the frozen dataclasses.
+`GADGETS()` and `register_gadgets()` keep their current shape; deepen *inside*
+the package by adding modules and enriching `run_domain()`'s payload. The full
+frozen surface is tabulated in `docs/architecture.md`.
 
 ## Publishing note
 
-Local-only: no remote, never push. Metadata sidecars (`.zenodo.json`,
-`CITATION.cff`, `codemeta.json`) drop DOI fields because the tree is not
-published.
+Local-only: no remote, never push. The metadata sidecars (`.zenodo.json`,
+`CITATION.cff`, `codemeta.json`) omit DOI fields because the tree is not
+published — they carry no placeholder DOI.
 
 ## Troubleshooting
 
-* Missing `bond_api`: run `uv sync --extra dev` (the path dependency is only
-  resolved after sync).
-* script `ModuleNotFoundError` for the package: run from this package root so
-  `pythonpath = [".", "src"]` applies; scripts self-insert `src/` via
+* Missing `bond_api`: run `uv sync --extra dev` — the path dependency is only
+  resolved after a sync.
+* `ModuleNotFoundError` for the package in a script: run from this package root
+  so `pythonpath = [".", "src"]` applies. Scripts also self-insert `src/` via
   `scripts/_bootstrap.py`.
-* Figure tests hanging: `MPLBACKEND=Agg` is forced in `tests/conftest.py` and
-  at import of `figures.py`.
+* Figure tests hanging: `MPLBACKEND=Agg` is forced in `tests/conftest.py` and at
+  import of `figures.py`.
+* Token generation raising a config mismatch: that is
+  `verify_declared_experiment()` doing its job — a canonical fixture changed
+  without `manuscript/config.yaml` being updated to match.
 
 ## See also
 
-* BOND suite skill: `bond-suite-package-development` (guardrails + frozen
-  protocol reference).
-* Frozen protocol record: `references/bond-api-phase1.md` in that skill.
+* [`docs/architecture.md`](docs/architecture.md) — module-by-module structure
+  and the frozen protocol surface.
+* [`docs/testing_philosophy.md`](docs/testing_philosophy.md) — test doctrine.
+* [`docs/agent_instructions.md`](docs/agent_instructions.md) — read-first
+  constraints and the gate checklist.
+* BOND suite skill: `bond-suite-package-development` (guardrails plus the frozen
+  protocol reference at `references/bond-api-phase1.md`).

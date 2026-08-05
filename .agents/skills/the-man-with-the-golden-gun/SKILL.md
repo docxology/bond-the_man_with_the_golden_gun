@@ -47,7 +47,13 @@ uv run pytest tests/ --cov=src --cov-fail-under=90
 - **Frozen protocol.** implement the frozen `bond-api` `MissionProvider`; do
   not invent new types. `mission.py` is the only module importing `bond_api`.
 - **Pure domain core stays standalone.** Do not import `bond_api` (or
-  `infrastructure`) inside the three concept modules.
+  `infrastructure`) inside any of the six domain modules listed above.
+- **Bottlenecks are not articulation points.** `mirror_gated_bottlenecks`
+  separates a specific entry from a specific exit; `articulation_points` cuts
+  the graph anywhere. Conflating them is the easiest wrong answer here.
+- **Config is verified, not decorative.** `manuscript/config.yaml`'s
+  `experiment` block is recomputed by `verify_declared_experiment()`; changing
+  a canonical fixture without updating the config raises at token generation.
 - **No mocks.** Real data + computation only; deterministic known vectors.
 - **Local-only.** No remote; never push; metadata sidecars drop DOI fields.
 - **Lineage gate.** Keep `template[_]code_project` strings out of your own
@@ -57,6 +63,8 @@ uv run pytest tests/ --cov=src --cov-fail-under=90
 
 - Package contract: [`AGENTS.md`](../../../AGENTS.md)
 - Overview: [`README.md`](../../../README.md)
-- Build history: [`TODO.md`](../../../TODO.md)
+- Open work and integration points: [`TODO.md`](../../../TODO.md)
+- Module-by-module structure: [`docs/architecture.md`](../../../docs/architecture.md)
+- Test doctrine: [`docs/testing_philosophy.md`](../../../docs/testing_philosophy.md)
 - BOND suite skill: `bond-suite-package-development` (guardrails + frozen
   protocol reference).

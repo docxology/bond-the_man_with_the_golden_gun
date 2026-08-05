@@ -9,7 +9,7 @@
 
 paper:
   title: "The Man with the Golden Gun: SOLEX — Special-Agent Mission Software"
-  subtitle: "Solar Concentration Yield, Funhouse Lair Escape Topology, and Assassin Duel/Bounty Scheduling"
+  subtitle: "Heliostat Yield and Solar Tracking, Funhouse Lair Escape Topology and Flow Analysis, and Duel/Deadline Bounty Scheduling"
   version: "0.1.0"
   date: "2026-08-04"
 
@@ -28,21 +28,34 @@ publication:
 mission:
   codename: "SOLEX"
   film: "the_man_with_the_golden_gun"
+  # These six objectives are the MissionBrief objectives declared by
+  # src/the_man_with_the_golden_gun/mission.py. tests/test_mission.py asserts
+  # the two lists agree verbatim, so this block cannot drift from the provider.
   objectives:
     - "model solar concentration yield (mirror array to heat)"
+    - "track solar position and daily clear-sky insolation"
     - "solve the funhouse lair escape topology (rooms/mirrors as graph)"
+    - "analyse lair flow: edge-disjoint routes, min cut, cheapest escape"
     - "schedule the assassin duel/bounty appointment book"
+    - "schedule unit-time deadline bounty contracts (max profit)"
   seed: 3
-  design: "weighted interval scheduling; BFS escape routing; greedy mirror-budget allocation"
+  design: >-
+    Spencer/Duffie-Beckman solar geometry; greedy mirror-budget allocation;
+    BFS escape routing with exact bottleneck removal; Edmonds-Karp max flow and
+    min cut; Dijkstra cost-aware escape; weighted interval scheduling; deadline
+    greedy with union-find.
 
 keywords:
   - "solar concentration"
   - "heliostat field"
   - "thermal yield"
+  - "solar position algorithms"
+  - "clear-sky insolation"
   - "graph escape topology"
   - "bottleneck analysis"
+  - "maximum flow and minimum cut"
   - "weighted interval scheduling"
-  - "appointment-book scheduling"
+  - "deadline scheduling"
   - "deterministic reproducible research"
   - "PROJECT BOND"
 
@@ -50,7 +63,18 @@ metadata:
   license: "MIT"
   language: "en"
 
-# Documented advisory controls (validation inputs only — never execute agents).
+# Enforced quality gates. `coverage_fail_under` is the number passed to
+# `pytest --cov-fail-under` and is injected into the manuscript as
+# {{COVERAGE_GATE_PCT}} so no section quotes a coverage threshold by hand.
+gates:
+  coverage_fail_under: 90
+  mock_frameworks_allowed: 0
+
+# Declared canonical inputs. Every key in this block is *verified* at token
+# generation time by
+# `manuscript_variables.verify_declared_experiment()`: each declaration is
+# recomputed from the domain models and a disagreement raises, so this block is
+# a checked restatement rather than inert documentation.
 experiment:
   codename: "SOLEX"
   daily_dni_w_per_m2: 1000.0

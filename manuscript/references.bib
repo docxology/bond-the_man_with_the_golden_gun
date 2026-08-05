@@ -1,3 +1,8 @@
+% PROJECT BOND · the_man_with_the_golden_gun (SOLEX) — bibliography.
+% Every entry below is a real, checkable source for a model this package
+% actually implements. Nothing is cited that is not implemented, and nothing
+% implemented is left uncited.
+
 @misc{bond_protocol,
   title = {bond-api: the frozen MissionProvider protocol contract},
   author = {Friedman, Daniel Ari},
@@ -7,19 +12,15 @@
 
 @misc{golden_gun_film,
   title = {The Man with the Golden Gun},
-  author = {Gilbert, Lewis and Maibaum, Richard and Mankiewicz, Tom},
+  author = {Hamilton, Guy},
   year = {1974},
   howpublished = {Eon Productions / United Artists},
-  note = {Film; solex solar-array narrative reference.},
+  note = {Film. Directed by Guy Hamilton; screenplay by Richard Maibaum and
+          Tom Mankiewicz. Narrative source for the Solex agitator, the
+          funhouse lair, and the assassin's contract book.},
 }
 
-@book{kleinberg_tardos,
-  title = {Algorithm Design},
-  author = {Kleinberg, Jon and Tardos, {\'E}va},
-  year = {2006},
-  publisher = {Pearson / Addison-Wesley},
-  note = {Weighted interval scheduling (ch. 6); scheduling with deadlines (ch. 4).},
-}
+% --- Solar geometry and thermal engineering -------------------------------
 
 @book{duffie_beckman,
   title = {Solar Engineering of Thermal Processes},
@@ -27,28 +28,10 @@
   year = {2013},
   edition = {4th},
   publisher = {John Wiley \& Sons},
-  note = {Solar position algorithms and the daily-insolation closed form (ch. 1).},
-}
-
-@article{michalsky,
-  title = {The Astronomical Almanac's algorithm for approximate solar position (1950--2050)},
-  author = {Michalsky, Joseph J.},
-  journal = {Solar Energy},
-  volume = {40},
-  number = {3},
-  pages = {227--235},
-  year = {1988},
-  publisher = {Pergamon},
-  note = {Approximate solar position algorithm.},
-}
-
-@book{cormen,
-  title = {Introduction to Algorithms},
-  author = {Cormen, Thomas H. and Leiserson, Charles E. and Rivest, Ronald L. and Stein, Clifford},
-  year = {2009},
-  edition = {3rd},
-  publisher = {MIT Press},
-  note = {Maximum flow and min-cut (ch. 26); Dijkstra (ch. 24); scheduling with deadlines (ch. 16).},
+  address = {Hoboken, NJ},
+  note = {Ch. 1: solar position, the sunrise hour angle, and the closed-form
+          daily extraterrestrial irradiation on a horizontal plane implemented
+          in solar_tracking.daily_extraterrestrial_insolation_kwh_m2.},
 }
 
 @article{spencer,
@@ -59,5 +42,108 @@
   number = {5},
   pages = {172},
   year = {1971},
-  note = {Fourier-series solar declination and equation of time.},
+  note = {The declination and equation-of-time Fourier series implemented in
+          solar_tracking.solar_declination_deg and equation_of_time_min.},
+}
+
+@article{michalsky,
+  title = {The Astronomical Almanac's algorithm for approximate solar position
+           (1950--2050)},
+  author = {Michalsky, Joseph J.},
+  journal = {Solar Energy},
+  volume = {40},
+  number = {3},
+  pages = {227--235},
+  year = {1988},
+  publisher = {Pergamon},
+  note = {Higher-accuracy alternative to the Spencer series; cited in the scope
+          section as the upgrade path, deliberately not implemented here.},
+}
+
+% --- Graph algorithms ------------------------------------------------------
+
+@book{cormen,
+  title = {Introduction to Algorithms},
+  author = {Cormen, Thomas H. and Leiserson, Charles E. and Rivest, Ronald L.
+            and Stein, Clifford},
+  year = {2009},
+  edition = {3rd},
+  publisher = {MIT Press},
+  address = {Cambridge, MA},
+  note = {Ch. 24 Dijkstra; ch. 26 maximum flow, Edmonds--Karp and max-flow
+          min-cut; sec. 16.5 unit-time task scheduling with deadlines as a
+          matroid, which is the exactness argument for deadline_scheduler.},
+}
+
+@article{ford_fulkerson,
+  title = {Maximal flow through a network},
+  author = {Ford, L. R. and Fulkerson, D. R.},
+  journal = {Canadian Journal of Mathematics},
+  volume = {8},
+  pages = {399--404},
+  year = {1956},
+  note = {The max-flow min-cut theorem underlying lair_flows.min_cut_edges.},
+}
+
+@article{edmonds_karp,
+  title = {Theoretical improvements in algorithmic efficiency for network flow
+           problems},
+  author = {Edmonds, Jack and Karp, Richard M.},
+  journal = {Journal of the ACM},
+  volume = {19},
+  number = {2},
+  pages = {248--264},
+  year = {1972},
+  note = {The BFS augmenting-path rule implemented in
+          lair_flows.edmonds_karp.},
+}
+
+@article{dijkstra,
+  title = {A note on two problems in connexion with graphs},
+  author = {Dijkstra, E. W.},
+  journal = {Numerische Mathematik},
+  volume = {1},
+  pages = {269--271},
+  year = {1959},
+  note = {Shortest paths with non-negative edge weights; implemented in
+          lair_flows.cost_aware_escape.},
+}
+
+@article{hopcroft_tarjan,
+  title = {Algorithm 447: efficient algorithms for graph manipulation},
+  author = {Hopcroft, John and Tarjan, Robert},
+  journal = {Communications of the ACM},
+  volume = {16},
+  number = {6},
+  pages = {372--378},
+  year = {1973},
+  note = {Linear-time biconnected-components / cut-vertex algorithm
+          implemented in lair_topology.articulation_points.},
+}
+
+% --- Scheduling ------------------------------------------------------------
+
+@book{kleinberg_tardos,
+  title = {Algorithm Design},
+  author = {Kleinberg, Jon and Tardos, {\'E}va},
+  year = {2006},
+  publisher = {Pearson / Addison-Wesley},
+  address = {Boston, MA},
+  note = {Sec. 6.1: weighted interval scheduling by dynamic programming with
+          the p(j) predecessor table, implemented in
+          duel_scheduler.max_bounty_schedule; sec. 4.1: the earliest-finish
+          greedy for interval scheduling, implemented in
+          duel_scheduler.earliest_finish_schedule.},
+}
+
+@article{tarjan_unionfind,
+  title = {Efficiency of a good but not linear set union algorithm},
+  author = {Tarjan, Robert Endre},
+  journal = {Journal of the ACM},
+  volume = {22},
+  number = {2},
+  pages = {215--225},
+  year = {1975},
+  note = {Path-compressed disjoint-set analysis; the structure used for the
+          "latest free slot" query in deadline_scheduler._SlotUnionFind.},
 }

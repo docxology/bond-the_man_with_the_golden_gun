@@ -87,27 +87,38 @@ class _SlotUnionFind:
         self._parent[slot] = self.find(slot - 1)
 
 
+def _greedy_assignment(jobs: tuple[DeadlineJob, ...]) -> list[tuple[int, DeadlineJob]]:
+    """Run the deadline greedy once; return accepted ``(slot, job)`` pairs.
+
+    Jobs are processed in descending profit (ties: ascending id) and each
+    accepted job takes the latest still-free slot at or before its deadline.
+    Both :func:`max_profit_with_deadlines` and :func:`assign_slots` are views
+    over this single computation, so the reported profit and the reported slot
+    assignment can never disagree.
+    """
+    if not jobs:
+        return []
+    ordered = sorted(jobs, key=lambda job: (-job.profit, job.id))
+    union = _SlotUnionFind(max(job.deadline for job in ordered))
+    accepted: list[tuple[int, DeadlineJob]] = []
+    for job in ordered:
+        slot = union.find(job.deadline)
+        if slot > 0:
+            union.occupy(slot)
+            accepted.append((slot, job))
+    return accepted
+
+
 def max_profit_with_deadlines(jobs: tuple[DeadlineJob, ...]) -> tuple[float, tuple[str, ...]]:
     """Maximum total profit schedule for unit-time jobs with deadlines.
 
     Returns ``(total_profit, selected_ids)`` — the exact greedy solution:
     jobs in descending profit (ties: ascending id), each assigned to the
-    latest free slot ≤ its deadline. Deterministic.
+    latest free slot ≤ its deadline. Ids are returned in acceptance order
+    (descending profit), which is deterministic.
     """
-    if not jobs:
-        return 0.0, ()
-    ordered = sorted(jobs, key=lambda job: (-job.profit, job.id))
-    max_deadline = max(job.deadline for job in ordered)
-    union = _SlotUnionFind(max_deadline)
-    selected: list[str] = []
-    total = 0.0
-    for job in ordered:
-        slot = union.find(job.deadline)
-        if slot > 0:
-            union.occupy(slot)
-            selected.append(job.id)
-            total += job.profit
-    return total, tuple(selected)
+    accepted = _greedy_assignment(jobs)
+    return float(sum(job.profit for _, job in accepted)), tuple(job.id for _, job in accepted)
 
 
 def assign_slots(jobs: tuple[DeadlineJob, ...]) -> tuple[tuple[int, str], ...]:
@@ -115,15 +126,4 @@ def assign_slots(jobs: tuple[DeadlineJob, ...]) -> tuple[tuple[int, str], ...]:
 
     Only accepted jobs appear; slots are 1-indexed time slots, sorted.
     """
-    if not jobs:
-        return ()
-    ordered = sorted(jobs, key=lambda job: (-job.profit, job.id))
-    max_deadline = max(job.deadline for job in ordered)
-    union = _SlotUnionFind(max_deadline)
-    assignment: list[tuple[int, str]] = []
-    for job in ordered:
-        slot = union.find(job.deadline)
-        if slot > 0:
-            union.occupy(slot)
-            assignment.append((slot, job.id))
-    return tuple(sorted(assignment))
+    return tuple(sorted((slot, job.id) for slot, job in _greedy_assignment(jobs)))

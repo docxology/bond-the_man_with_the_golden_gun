@@ -1,10 +1,13 @@
 # Appendix: Generated metric register
 
 This appendix records the resolved values of every manuscript metric at
-generation time (`{{GENERATION_TIMESTAMP}}`). The live inventory is produced
-by `scripts/z_generate_manuscript_variables.py` into
-`output/data/manuscript_variables.json`; the table below lists the
-deterministic canonical outputs of the six domain models.
+generation time (`{{GENERATION_TIMESTAMP}}`). The live inventory is produced by
+`scripts/z_generate_manuscript_variables.py` into
+`output/data/manuscript_variables.json`; the tables below list the
+deterministic canonical outputs of the {{NUM_DOMAIN_MODULES}} domain models.
+Nothing here is transcribed by hand — every cell is the same placeholder
+mechanism used in the body sections, so the register cannot drift from the
+prose that cites it.
 
 ## Solar concentration
 
@@ -16,6 +19,9 @@ deterministic canonical outputs of the six domain models.
 | Optical power | {{SOLEX_OPTICAL_POWER_KW}} kW |
 | Thermal heat output | {{SOLEX_HEAT_KW}} kW |
 | Concentration ratio | {{SOLEX_CONCENTRATION}}× |
+| Mirrors in field | {{SOLEX_NUM_MIRRORS}} |
+| Allocation budget | {{SOLEX_BUDGET_M2}} m² |
+| Allocation selection | {{SOLEX_BUDGET_SELECTION}} |
 
 ## Solar tracking & daily insolation
 
@@ -46,7 +52,8 @@ deterministic canonical outputs of the six domain models.
 | --- | --- |
 | Rooms | {{LAIR_EXT_NUM_ROOMS}} |
 | Edge connectivity | {{LAIR_EXT_EDGE_CONNECTIVITY}} |
-| Min-cut walls | {{LAIR_EXT_MIN_CUT_EDGES}} |
+| Min-cut wall count | {{LAIR_EXT_MIN_CUT_EDGES}} |
+| Min-cut walls | {{LAIR_EXT_MIN_CUT_WALLS}} |
 | Cheapest escape cost | {{LAIR_EXT_CHEAPEST_COST}} |
 | Cheapest escape route | {{LAIR_EXT_CHEAPEST_PATH}} |
 
@@ -56,8 +63,10 @@ deterministic canonical outputs of the six domain models.
 | --- | --- |
 | Contracts | {{DUEL_NUM_DUELS}} |
 | Conflicts | {{DUEL_NUM_CONFLICTS}} |
-| Selected | {{DUEL_SELECTED}} |
+| Max-bounty selection | {{DUEL_SELECTED}} ({{DUEL_NUM_SELECTED}}) |
 | Maximum bounty | {{DUEL_TOTAL_BOUNTY}} |
+| Earliest-finish selection | {{DUEL_EARLIEST_FINISH}} ({{DUEL_NUM_EARLIEST_FINISH}}) |
+| Earliest-finish bounty | {{DUEL_EARLIEST_FINISH_BOUNTY}} |
 
 ## Deadline scheduling
 
@@ -68,9 +77,14 @@ deterministic canonical outputs of the six domain models.
 | Maximum profit | {{DUEL_DEADLINE_MAX_PROFIT}} |
 | Slot assignment | {{DUEL_DEADLINE_SLOTS}} |
 
-## Environment
+## Environment and gates
 
 | Metric | Value |
 | --- | --- |
+| Package version | {{PACKAGE_VERSION}} |
+| Mission seed | {{MISSION_SEED}} |
+| Domain modules | {{NUM_DOMAIN_MODULES}} |
+| Figures | {{NUM_FIGURES}} |
+| Coverage gate | {{COVERAGE_GATE_PCT}}% line + branch on `src/` |
 | Python | {{PYTHON_VERSION}} |
 | Timestamp | {{GENERATION_TIMESTAMP}} |

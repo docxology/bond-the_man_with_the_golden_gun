@@ -74,3 +74,38 @@ def test_deadline_beyond_max_slot_uses_latest() -> None:
 def test_canonical_deadline_book() -> None:
     assert canonical_deadline_book() == SOLEX_DEADLINE_JOBS
     assert len(SOLEX_DEADLINE_JOBS) == 5
+
+
+def test_profit_and_slots_agree_on_the_same_acceptance_set() -> None:
+    """The two public views must never disagree about which jobs were accepted.
+
+    Both are computed from one run of the greedy, so this pins the invariant
+    that made sharing the implementation worthwhile: the reported profit is the
+    profit of exactly the jobs that appear in the slot assignment.
+    """
+    books = (
+        SOLEX_DEADLINE_JOBS,
+        (_job("x", 9, profit=1.0), _job("y", 1, profit=10.0)),
+        (_job("a", 1, profit=1.0), _job("b", 1, profit=2.0), _job("c", 1, profit=3.0)),
+        (_job("solo", 4, profit=0.0),),
+    )
+    for book in books:
+        total, selected = max_profit_with_deadlines(book)
+        slots = assign_slots(book)
+        by_id = {job.id: job for job in book}
+        assert sorted(selected) == sorted(job_id for _, job_id in slots)
+        assert total == sum(by_id[job_id].profit for _, job_id in slots)
+        # a slot is used at most once, and never past the job's deadline
+        assert len({slot for slot, _ in slots}) == len(slots)
+        assert all(slot <= by_id[job_id].deadline for slot, job_id in slots)
+
+
+def test_over_subscribed_book_rejects_the_cheapest_work() -> None:
+    """Five contracts for three slots: the two lowest-profit jobs are dropped."""
+    total, selected = max_profit_with_deadlines(SOLEX_DEADLINE_JOBS)
+    dropped = {job.id for job in SOLEX_DEADLINE_JOBS} - set(selected)
+    assert dropped == {"A", "D"}
+    # the rejected pair really are the cheapest two contracts
+    profits = sorted(job.profit for job in SOLEX_DEADLINE_JOBS)
+    assert sum(job.profit for job in SOLEX_DEADLINE_JOBS if job.id in dropped) == sum(profits[:2])
+    assert total == sum(profits[2:])

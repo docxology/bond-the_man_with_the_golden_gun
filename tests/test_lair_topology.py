@@ -59,6 +59,25 @@ def test_missing_room_raises() -> None:
         mirror_gated_bottlenecks(graph, entry, "Nowhere")
 
 
+def test_disconnected_entry_exit_has_no_bottlenecks() -> None:
+    """A lair with no escape route has no bottleneck rooms.
+
+    Regression/negative-control for a real edge-case defect: when the entry
+    cannot already reach the exit, the removal-based test used to report every
+    room as a bottleneck (each removal "disconnects" an already-disconnected
+    pair). The honest answer for a maze with no way out is an empty set.
+    """
+    graph = build_lair_graph(["a", "b", "c"], [("a", "b")])  # c is cut off
+    assert find_escape_path(graph, "a", "c") is None  # no escape route at all
+    assert mirror_gated_bottlenecks(graph, "a", "c") == ()
+
+
+def test_connected_bottleneck_still_detected() -> None:
+    """Positive control for the guard: a real bottleneck still reports."""
+    graph = build_lair_graph(["a", "x", "b"], [("a", "x"), ("x", "b")])
+    assert mirror_gated_bottlenecks(graph, "a", "b") == ("x",)
+
+
 def test_build_lair_undeclared_room() -> None:
     with pytest.raises(ValueError):
         build_lair_graph(["a"], [("a", "ghost")])

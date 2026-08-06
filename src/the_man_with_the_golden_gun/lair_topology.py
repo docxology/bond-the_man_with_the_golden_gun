@@ -183,10 +183,17 @@ def mirror_gated_bottlenecks(graph: Adjacency, entry: str, exit_: str) -> tuple[
     Computed honestly: a room is a bottleneck if removing it disconnects the
     entry from the exit (verified by reachability after each removal), which
     is exact for small lairs. Sorted for deterministic reporting.
+
+    When the entry cannot already reach the exit — a lair with no escape route
+    at all — the set of bottlenecks is empty: the vacuous case must not
+    degenerate into reporting every room as critical, which is what the raw
+    removal test would produce.
     """
     _require_node(graph, entry, "entry")
     _require_node(graph, exit_, "exit")
     if entry == exit_:
+        return ()
+    if exit_ not in reachable_rooms(graph, entry):
         return ()
     bottlenecks: list[str] = []
     for room in sorted(graph):

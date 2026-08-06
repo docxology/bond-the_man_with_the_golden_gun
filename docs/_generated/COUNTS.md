@@ -10,10 +10,10 @@ Measured on Python 3.14.6 (darwin) with
 
 | Metric | Value |
 | --- | --- |
-| Test count | 200 |
+| Test count | 206 |
 | Failures / errors / skips | 0 / 0 / 0 |
-| Statements (`src/`) | 1047 |
-| Branches (`src/`) | 326 |
+| Statements (`src/`) | 1070 |
+| Branches (`src/`) | 338 |
 | Line coverage (`src/`) | 100.00% |
 | Branch coverage (`src/`) | 100.00% |
 | Gate | `--cov-fail-under=90` (passing) |

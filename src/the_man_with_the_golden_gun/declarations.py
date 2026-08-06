@@ -70,6 +70,7 @@ __all__ = [
     "CLAIM_RECOMPUTERS",
     "DATA_ARTIFACTS",
     "DOMAIN_MODULES",
+    "FILM_TITLE",
     "MISSION_CODENAME",
     "PACKAGE_NAME",
     "PACKAGE_ROOT",
@@ -87,6 +88,12 @@ PACKAGE_ROOT = Path(__file__).resolve().parents[2]
 #: ``bond_api`` adapter. ``tests/test_mission.py`` binds it to
 #: ``mission.CODENAME`` so the adapter and this constant cannot diverge.
 MISSION_CODENAME = "SOLEX"
+
+#: Human-readable film title for the source film, in the pure layer so it can
+#: be compared against ``domain_profile.yaml``'s ``film`` field without the
+#: ``bond_api`` adapter. Note this is the *title*, distinct from the package
+#: slug ``PACKAGE_NAME`` and the provider's ``mission.FILM`` slug.
+FILM_TITLE = "The Man with the Golden Gun (1974)"
 
 #: The pure domain modules of the SOLEX core, in dependency order. Single
 #: source of truth for "which concepts this package implements": the
@@ -316,6 +323,14 @@ _EXPERIMENT_PLAN_KEYS = frozenset(
     {"experiment", "canonical_inputs", "primary_metrics", "expected_figures", "baseline", "ablation"}
 )
 
+#: Allowed top-level keys of ``domain_profile.yaml``. The verifier raises on any
+#: key outside this set, so a new, unchecked section cannot be added to the
+#: profile silently — the sibling guard ``_EXPERIMENT_PLAN_KEYS`` provides for
+#: ``experiment_plan.yaml``.
+_DOMAIN_PROFILE_KEYS = frozenset(
+    {"project", "codename", "film", "review_gates", "source_policy", "artifact_expectations", "protocol"}
+)
+
 
 def verify_experiment_plan(path: str | Path | None = None) -> tuple[str, ...]:
     """Check ``experiment_plan.yaml`` against the live code.
@@ -386,16 +401,33 @@ def verify_domain_profile(
     """Check ``domain_profile.yaml`` against the live code.
 
     Verified: the project slug (equals the installed package name), the
-    codename, the module list (equals :data:`DOMAIN_MODULES`), the expected
-    script artifacts (equal the data artifacts plus the figure registry), and —
-    when ``coverage_gate`` is supplied — the declared coverage floor.
+    codename, the film title (equals :data:`FILM_TITLE`), the module list
+    (equals :data:`DOMAIN_MODULES`), the expected script artifacts (equal the
+    data artifacts plus the figure registry), the adapter path named by
+    ``protocol.adapter`` (must be an existing file), and — when
+    ``coverage_gate`` is supplied — the declared coverage floor. An unknown
+    top-level key raises rather than passing silently.
     """
     profile_path = Path(path) if path is not None else DEFAULT_DOMAIN_PROFILE_PATH
     document = _load_mapping(profile_path)
     source = profile_path.name
 
+    unknown = sorted(set(document) - _DOMAIN_PROFILE_KEYS)
+    if unknown:
+        raise ValueError(f"{source} carries unverified top-level key(s): {', '.join(unknown)}")
+
     compare_declaration(source, "project", document.get("project"), PACKAGE_NAME)
     compare_declaration(source, "codename", document.get("codename"), MISSION_CODENAME)
+    compare_declaration(source, "film", document.get("film"), FILM_TITLE)
+
+    protocol = document.get("protocol")
+    if not isinstance(protocol, dict) or "adapter" not in protocol:
+        raise ValueError(f"{source} must carry a `protocol.adapter` mapping entry")
+    adapter = PACKAGE_ROOT / str(protocol["adapter"])
+    if not adapter.is_file():
+        raise ValueError(
+            f"{source} declares protocol.adapter {protocol['adapter']!r} but the adapter file does not exist"
+        )
 
     policy = document.get("source_policy")
     if not isinstance(policy, dict):
@@ -412,7 +444,14 @@ def verify_domain_profile(
     if declared_artifacts != expected_artifacts:
         raise _disagreement(source, "artifact_expectations.script_artifacts", declared_artifacts, expected_artifacts)
 
-    checked = ["project", "codename", "source_policy.modules", "artifact_expectations.script_artifacts"]
+    checked = [
+        "project",
+        "codename",
+        "film",
+        "protocol.adapter",
+        "source_policy.modules",
+        "artifact_expectations.script_artifacts",
+    ]
     if coverage_gate is not None:
         gates = document.get("review_gates")
         if not isinstance(gates, dict):

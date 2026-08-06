@@ -293,6 +293,25 @@ def generate_variables(
     earliest_finish = earliest_finish_schedule(CANONICAL_DUELS)
     earliest_finish_bounty = sum(a.bounty for a in CANONICAL_DUELS if a.id in set(earliest_finish))
 
+    # --- sensitivity sweeps (live model calls over a parameter grid) ---
+    # Clearness-factor sensitivity: how much of the extraterrestrial resource
+    # the clear-sky model retains, and what that means for the daily yield.
+    clearness_sweep_rows: list[tuple[str, ...]] = []
+    for kappa in (0.60, 0.75, 0.90):
+        _cs = daily_clear_sky_insolation_kwh_m2(latitude, day_of_year, solar_constant, clearness=kappa)
+        _fe = field_daily_energy_kwh(
+            SOLEX_FIELD, latitude, day_of_year, solar_constant_w_m2=solar_constant, clearness=kappa
+        )
+        clearness_sweep_rows.append((f"{kappa:.2f}", f"{_cs:.2f}", f"{_fe:.1f}"))
+    # Site-latitude sensitivity: moving the canonical field equatorward raises
+    # the overhead sun at the solstice and with it the concentrated daily energy.
+    latitude_sweep_rows: list[tuple[str, ...]] = []
+    for _lat in (0.0, SOLEX_LATITUDE_DEG, 23.44):
+        _fe = field_daily_energy_kwh(
+            SOLEX_FIELD, _lat, day_of_year, solar_constant_w_m2=solar_constant, clearness=clearness
+        )
+        latitude_sweep_rows.append((f"{_lat:g}", f"{_fe:.1f}"))
+
     return {
         "BOND_TITLE": str(paper.get("title", "The Man with the Golden Gun: SOLEX")),
         "BOND_CODENAME": MISSION_CODENAME,
@@ -317,6 +336,8 @@ def generate_variables(
         "SOLAR_EXTRATERRESTRIAL_KWH_M2": f"{extraterrestrial:.2f}",
         "SOLAR_CLEAR_SKY_KWH_M2": f"{clear_sky:.2f}",
         "SOLAR_FIELD_DAILY_KWH": f"{daily_energy:.1f}",
+        "SOLAR_CLEARNESS_SWEEP_ROWS": _markdown_rows(clearness_sweep_rows),
+        "SOLAR_LATITUDE_SWEEP_ROWS": _markdown_rows(latitude_sweep_rows),
         # canonical lair
         "LAIR_NUM_ROOMS": str(len(graph)),
         "LAIR_ESCAPE_DISTANCE": str(distance) if distance is not None else "INF",

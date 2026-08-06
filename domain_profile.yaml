@@ -1,12 +1,14 @@
 # Declarative agentic-research profile for the SOLEX film package.
 # Declarative overlay only — it never executes autonomous agents.
 #
-# Checked, not advisory: `project`, `codename`, `source_policy.modules` (must
-# equal `declarations.DOMAIN_MODULES`), `artifact_expectations.script_artifacts`
-# (must equal the data artifacts plus the `figures.FIGURES` registry, in order),
-# and `review_gates.coverage_min_line_branch` (must equal
-# `manuscript/config.yaml` gates.coverage_fail_under). Enforced by
-# `declarations.verify_domain_profile()` from `tests/test_declarations.py`.
+# Checked, not advisory: `project`, `codename`, `film` (must equal the source
+# title), `source_policy.modules` (must equal `declarations.DOMAIN_MODULES`),
+# `artifact_expectations.script_artifacts` (must equal the data artifacts plus
+# the `figures.FIGURES` registry, in order), `protocol.adapter` (must name an
+# existing adapter file), and `review_gates.coverage_min_line_branch` (must
+# equal `manuscript/config.yaml` gates.coverage_fail_under). An unknown
+# top-level key raises. Enforced by `declarations.verify_domain_profile()` from
+# `tests/test_declarations.py`.
 #
 # The remaining `review_gates` booleans are policy statements about how this
 # package is worked on, not machine-checked facts, and the verifier does not

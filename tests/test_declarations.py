@@ -204,6 +204,7 @@ def test_live_domain_profile_matches_the_code() -> None:
     checked = verify_domain_profile(coverage_gate=_coverage_gate())
     assert "source_policy.modules" in checked
     assert "review_gates.coverage_min_line_branch" in checked
+    assert "film" in checked and "protocol.adapter" in checked
     # the coverage gate is optional; omitting it simply checks less
     assert "review_gates.coverage_min_line_branch" not in verify_domain_profile()
 
@@ -227,6 +228,11 @@ def test_domain_profile_lists_every_module_and_artifact() -> None:
         (lambda p: p["artifact_expectations"]["script_artifacts"].pop(), "script_artifacts"),
         (lambda p: p.__setitem__("review_gates", 90), "`review_gates` mapping"),
         (lambda p: p["review_gates"].__setitem__("coverage_min_line_branch", 80), "coverage_min_line_branch"),
+        # Round-2 additions: unknown top-level key, film title, protocol adapter.
+        (lambda p: p.__setitem__("rumour_mill", {}), "unverified top-level key"),
+        (lambda p: p.__setitem__("film", "On Her Majesty's Secret Service"), "film"),
+        (lambda p: p.__setitem__("protocol", "nope"), "protocol.adapter"),
+        (lambda p: p["protocol"].__setitem__("adapter", "src/the_man_with_the_golden_gun/gone.py"), "does not exist"),
     ],
 )
 def test_domain_profile_rejects_a_stale_declaration(tmp_path, mutate, needle: str) -> None:  # type: ignore[no-untyped-def]

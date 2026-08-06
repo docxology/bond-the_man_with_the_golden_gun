@@ -4,9 +4,10 @@ PROJECT BOND film package for *The Man with the Golden Gun* (1974), mission
 codename **SOLEX**: six pure domain modules (heliostat yield, solar tracking,
 lair escape topology, lair flows, duel scheduling, deadline scheduling) behind
 the frozen `bond-api` `MissionProvider`. Local-only working tree — no remote,
-never push. **Verified state today (measured 2026-08-05, this session, Python
-3.14.6 darwin): 200 tests passed, 0 failures / 0 errors / 0 skips, 100.00% line
-and 100.00% branch coverage on `src/` against a `--cov-fail-under=90` gate;
+never push. **Verified state today (measured 2026-08-06, round-2 improvement
+session, Python 3.14.6 darwin): 206 tests passed, 0 failures / 0 errors / 0
+skips, 100.00% line and 100.00% branch coverage on `src/` against a
+`--cov-fail-under=90` gate;
 `ruff check`, `ruff format --check` and `mypy` clean on `src/` and `scripts/`.**
 All four findings in `output/verify/the_man_with_the_golden_gun.json` are
 remediated and re-verified below; what remains is listed here.
@@ -320,3 +321,95 @@ plus the working-tree TODO change, from the package root.
 Sandbox note: `uv` cannot write its cache under the default sandbox; re-run any
 `uv` command with the sandbox disabled if it reports
 "Failed to initialize cache at `~/.cache/uv`".
+
+## Round-2 (2026-08-06)
+
+Round-2 improvement pass: hostile self-review of the shipped code plus a
+manuscript depth pass. Pre-existing entries above are untouched; this section
+records only what this round changed.
+
+### Baseline (round-2 start)
+
+`uv run pytest tests/ --cov=src --cov-fail-under=90` → **200 passed**, 0
+failures/errors/skips, 100.00% line and branch on `src/` (1047 statements, 326
+branches). `uv run ruff check .`, `uv run ruff format --check .`, `uv run mypy
+src` all clean.
+
+### Round-2 findings & fixes
+
+**R1 — `mirror_gated_bottlenecks` false-positives on an already-disconnected
+entry/exit (correctness bug).** `lair_topology.py` computed a room as a
+bottleneck by removing it and re-testing reachability. When the entry cannot
+already reach the exit (no escape route), that test is vacuous: every candidate
+room's removal "disconnects" an already-disconnected pair, so the function
+reported *every* non-trivial room as a bottleneck (e.g. `('B',)` on a graph
+`A–B, C` with entry `A`, exit `C`) — exactly the "looks fine but is wrong at
+the edges" class.
+*Fix:* early-return `()` when `exit_ not in reachable_rooms(graph, entry)`,
+with a docstring stating that a maze with no way out has empty bottlenecks.
+*Evidence:* `tests/test_lair_topology.py::test_disconnected_entry_exit_has_no_bottlenecks`
+(a negative-control regression: asserts the empty set and that
+`find_escape_path` returns `None`) and
+`test_connected_bottleneck_still_detected` (positive control: `A–X–B` still
+reports `X`). Verified by execution: the pre-fix code returned `('B',)`, post-fix
+returns `()` while the canonical lair result is unchanged.
+
+**R2 — `verify_domain_profile` fail-open: unchecked `film`/`protocol` blocks and
+no unknown-key guard (verification gap; closes TODO V4).** The sibling
+`verify_experiment_plan` refuses an unrecognised top-level key, but
+`verify_domain_profile` did not: `domain_profile.yaml`'s `film:` and
+`protocol:{adapter,contract,gadgets_registry}:` passed entirely unread, and a
+new unchecked section could be added silently. `protocol.adapter` names a real
+file path that would rot unnoticed if the adapter moved.
+*Fix:* added `_DOMAIN_PROFILE_KEYS` (unknown-top-level-key guard), a pure-layer
+`FILM_TITLE = "The Man with the Golden Gun (1974)"` constant compared against
+`film`, and an existence check on `protocol.adapter`; the returned `checked`
+tuple now includes `"film"` and `"protocol.adapter"`.
+*Evidence:* four new tamper cases in
+`tests/test_declarations.py::test_domain_profile_rejects_a_stale_declaration`
+(unknown key → "unverified top-level key", wrong title → "film", non-mapping
+`protocol` → "protocol.adapter", missing adapter file → "does not exist") plus
+an updated live-profile assertion in
+`test_live_domain_profile_matches_the_code`.
+
+**R3 — manuscript: added a live-engine sensitivity analysis (depth pass).**
+Before this round the daily yield was reported as a single number with no
+analysis of what it depends on. `manuscript_variables.py::generate_variables()`
+now emits two parameter-sweep tables computed from live `field_daily_energy_kwh`
+calls — clearness factor (0.60/0.75/0.90) and site latitude (0°/8°/23.44°N) —
+consumed by new `{{SOLAR_CLEARNESS_SWEEP_ROWS}}` and
+`{{SOLAR_LATITUDE_SWEEP_ROWS}}` tokens in `03_results.md` (a new "Sensitivity
+and uncertainty of the daily yield" subsection, with an honest uncertainty
+paragraph naming the lumped-optical assumptions behind the clearness factor)
+and in `08_appendix.md`.
+*Evidence:* token gate green after regeneration
+(`scripts/z_generate_manuscript_variables.py` → "all manuscript tokens
+resolved", 11 sections, zero unresolved); the sweep numbers were cross-checked
+against the engine and the latitude narrative corrected in-review (the June
+solstice energy rises toward 23.44°N, the sub-solar latitude — not toward the
+equator) so the prose matches the computed data.
+
+### Round-2 gate numbers (all run this session)
+
+| Gate | Result |
+| --- | --- |
+| `pytest tests/ --cov=src --cov-fail-under=90` | **206 passed**, 0 fail / 0 error / 0 skip, 100.00% line + branch (1070 statements, 338 branches) |
+| `ruff check src/ scripts/ tests/` | `All checks passed!` |
+| `ruff format --check src/ scripts/ tests/` | `37 files already formatted` |
+| `mypy src scripts` | `Success: no issues found in 22 source files` / 10 scripts |
+| `scripts/z_generate_manuscript_variables.py` | exit 0, 11 sections resolved, no unresolved tokens |
+| `scripts/00_preflight.py` | exit 0 |
+
+### Left for a future round
+
+* TODO **C1** (lineage gate comment in `AGENTS.md` still claims "zero" while the
+  documented command legitimately returns the two documentation hits) and **C2**
+  (fleet-integration prose in `07_scope_and_related_work.md`) remain open —
+  deliberately prose/scope, not fixed this round.
+* TODO **E2** (annual DNI sweep as a fifth figure), **E3** (per-heliostat
+  incidence/cosine loss), **E4** (large seeded lair fixture) remain open
+  extensions; the new sensitivity tables are a partial, token-bound answer to
+  E2/E3's "the daily number depends on inputs that are not swept" gap but do not
+  add a figure or a per-heliostat aim model.
+* `docs/_generated/COUNTS.md` was regenerated to 206 / 1070 / 338; future gate
+  runs must re-copy from their own output per the file's own instruction.

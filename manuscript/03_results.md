@@ -32,6 +32,40 @@ concentrates into **{{SOLAR_FIELD_DAILY_KWH}} kWh/day** of thermal energy.
 
 ![Clear-sky horizontal beam flux across the canonical SOLEX day.](../output/figures/solex_daily.png){#fig:solex_daily}
 
+### Sensitivity and uncertainty of the daily yield
+
+The headline daily figure ({{SOLAR_FIELD_DAILY_KWH}} kWh) is a single point on
+two continua, and reading it as a point obscures how much of the number is the
+model's two free inputs — the clearness factor and the site latitude:
+
+| Clearness $\kappa$ | Clear-sky insolation (kWh/m²/day) | Field daily energy (kWh/day) |
+| --- | --- | --- |
+{{SOLAR_CLEARNESS_SWEEP_ROWS}}
+
+The clearness factor is the single largest source of uncertainty in the daily
+number: it is a bulk sunshine-availability parameter, not a measured quantity
+for any particular island day, and the deliberately unmodelled physics (real
+circumsolar attenuation, receiver thermal loss, mirror soiling) all live
+behind it. That is why the mission *reports* the clear-sky number only at the
+canonical clearness factor, never as a forecast.
+
+Holding clearness fixed and moving the site latitude shifts the overhead sun:
+
+| Latitude (deg N) | Field daily energy (kWh/day) |
+| --- | --- |
+{{SOLAR_LATITUDE_SWEEP_ROWS}}
+
+At the June solstice the sun stands directly over the Tropic of Cancer
+(23.44°N), so moving the field north from the equator toward that latitude
+raises the solstice noon elevation and, with it, the concentrated daily
+energy; the maximum over this band is the 23.44°N row, where the sun is
+overhead at noon. The canonical island ({{SOLAR_LATITUDE}}°N) is south of
+that maximum and therefore delivers less than its northernmost placement — a
+site-sensitivity the headline single number cannot show. Both sweeps are live
+engine output — the same `field_daily_energy_kwh` call the Results section
+uses, evaluated over a parameter grid — so they cannot drift from the model
+that produced the headline number.
+
 ## Lair escape topology
 
 The funhouse lair comprises {{LAIR_NUM_ROOMS}} rooms. The shortest escape route

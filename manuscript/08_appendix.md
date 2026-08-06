@@ -36,6 +36,18 @@ prose that cites it.
 | Clear-sky insolation | {{SOLAR_CLEAR_SKY_KWH_M2}} kWh/m² |
 | Field daily energy | {{SOLAR_FIELD_DAILY_KWH}} kWh |
 
+Sensitivity — clearness factor (kWh/m²/day, kWh/day):
+
+| Clearness | Clear-sky insolation (kWh/m²/day) | Field daily energy (kWh/day) |
+| --- | --- | --- |
+{{SOLAR_CLEARNESS_SWEEP_ROWS}}
+
+Sensitivity — site latitude (deg N, kWh/day):
+
+| Latitude (deg N) | Field daily energy (kWh/day) |
+| --- | --- |
+{{SOLAR_LATITUDE_SWEEP_ROWS}}
+
 ## Lair topology (canonical)
 
 | Metric | Value |

@@ -67,6 +67,10 @@ rg -n "template[_]code_project" . --glob '!uv.lock' --glob '!.git/**' --glob '!.
 git status --short
 ```
 
+`uv run` needs the suite monorepo — the `bond-api` path dependency. On a clone
+without that checkout, run the same commands as `python -m pytest …` against a
+venv; the recipe is in [`../STANDALONE.md`](../STANDALONE.md).
+
 A documentation change that describes behaviour the suite does not exercise is
 a claim without evidence: add the test in the same commit, or write the weaker
 sentence that is actually true.

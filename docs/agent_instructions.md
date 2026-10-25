@@ -31,10 +31,14 @@ copy is the local-only tree.
 
 ```bash
 cd "$(git rev-parse --show-toplevel)"   # run from this package's root
-uv sync --extra dev          # resolves the bond-api path dependency
+uv sync --extra dev          # needs the suite monorepo (bond-api path dep)
 uv run pytest tests/ -q      # confirm you are starting from green
 git status --short           # confirm you are starting from clean
 ```
+
+`uv run` needs the suite monorepo — the `bond-api` path dependency. On a clone
+without that checkout, run the same commands as `python -m pytest …` against a
+venv; the recipe is in [`../STANDALONE.md`](../STANDALONE.md).
 
 Starting from a red or dirty tree makes it impossible to attribute what you
 break, so establish the baseline first.

@@ -1,8 +1,8 @@
 # docs/ — the_man_with_the_golden_gun (SOLEX)
 
 Agent- and reader-facing documentation for this PROJECT BOND film package:
-*The Man with the Golden Gun* (1974), mission codename **SOLEX**. Local-only
-working tree — no remote, never pushed.
+*The Man with the Golden Gun* (1974), mission codename **SOLEX**, published as
+the standalone mirror `docxology/bond-the_man_with_the_golden_gun`.
 
 ## Contents
 

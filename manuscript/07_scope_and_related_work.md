@@ -77,7 +77,8 @@ fail rather than warn.
 SOLEX depends on exactly one fleet package, `bond-api`, and only through a
 single adapter module. The {{NUM_DOMAIN_MODULES}} domain modules import
 nothing outside the standard library, so the scientific core survives
-independently of the protocol. Two integration points remain open and are
-tracked in `TODO.md`: persisting executed outcomes to a provenance store once
-`bond-utilities` ships, and cross-package missions once the coordinator lands.
-Neither requires a change to the domain core.
+independently of the protocol. Both fleet integration points described in
+earlier drafts have since landed — `bond-utilities` ships the provenance store
+and the coordinator reconciles this provider by slug — so what remains open is
+this package's own wiring, tracked as `E1` in `TODO.md` and requiring no change
+to the domain core.

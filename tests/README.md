@@ -25,6 +25,10 @@ Run the gate:
 uv run pytest tests/ --cov=src --cov-fail-under=90
 ```
 
+`uv run` needs the suite monorepo (`bond-api` path dependency); on a clone
+without it, run `python -m pytest …` against a venv — see
+[`../STANDALONE.md`](../STANDALONE.md).
+
 Line **and** branch coverage on `src/`; zero failures and zero skips are
 required. The measured figures from the latest run are in
 [`../docs/_generated/COUNTS.md`](../docs/_generated/COUNTS.md).

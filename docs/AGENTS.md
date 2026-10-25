@@ -59,7 +59,7 @@ stands. In practice that means:
 ## Verify before claiming done
 
 ```bash
-cd /Users/4d/Documents/GitHub/template/projects/working/bond/the_man_with_the_golden_gun
+cd "$(git rev-parse --show-toplevel)"   # run from this package's root
 uv run pytest tests/ --cov=src --cov-fail-under=90
 uv run ruff check src/ scripts/ && uv run ruff format --check src/ scripts/
 uv run mypy src/ scripts/

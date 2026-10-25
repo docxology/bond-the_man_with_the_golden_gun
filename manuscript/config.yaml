@@ -4,7 +4,7 @@
 # The Man with the Golden Gun (1974) · mission codename SOLEX.
 # Manuscript {{TOKEN}} metrics are hydrated from this file + the deterministic
 # domain models (src/the_man_with_the_golden_gun/manuscript_variables.py) —
-# never hand-authored in prose. Local-only working tree: no remote.
+# never hand-authored in prose. Published mirror; no archived deposit.
 # ============================================================================
 
 paper:
@@ -21,7 +21,7 @@ authors:
     corresponding: true
 
 publication:
-  # Local-only tree: DOIs and repository URLs are intentionally omitted.
+  # No archived deposit: DOI fields are intentionally omitted.
   journal: "PROJECT BOND — film mission dossiers"
   year: "2026"
 

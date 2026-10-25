@@ -9,8 +9,8 @@ tags: [bond, film-package, solex, deterministic, mission-provider]
 
 # the-man-with-the-golden-gun
 
-Project-scoped skill for the PROJECT BOND film package at
-`projects/working/bond/the_man_with_the_golden_gun/`. Mission codename SOLEX
+Project-scoped skill for the PROJECT BOND film package — the standalone mirror
+of `projects/working/bond/the_man_with_the_golden_gun/`. Mission codename SOLEX
 (The Man with the Golden Gun, 1974). Load when working inside the package.
 
 ## When to Use
@@ -19,13 +19,13 @@ Project-scoped skill for the PROJECT BOND film package at
   regenerating artifacts, or driving the mission lifecycle.
 - Modifying the frozen protocol adapter (`src/the_man_with_the_golden_gun/mission.py`).
 - Verifying the package's contracts: layer boundaries (pure domain core vs
-  single `bond_api` adapter), deterministic tests, ≥90% coverage, local-only.
+  single `bond_api` adapter), deterministic tests, ≥90% coverage, frozen protocol.
 
 ## Quick Reference
 
 ```bash
-cd projects/working/bond/the_man_with_the_golden_gun
-uv sync --extra dev                     # resolves the bond-api path dep
+cd "$(git rev-parse --show-toplevel)"   # or any path to this package
+uv sync --extra dev                     # needs the suite monorepo; else see STANDALONE.md
 uv run python scripts/00_preflight.py   # protocol discoverability gate
 uv run python scripts/run_mission.py    # brief..debrief (all phases)
 uv run python scripts/generate_artifacts.py
@@ -55,7 +55,8 @@ uv run pytest tests/ --cov=src --cov-fail-under=90
   `experiment` block is recomputed by `verify_declared_experiment()`; changing
   a canonical fixture without updating the config raises at token generation.
 - **No mocks.** Real data + computation only; deterministic known vectors.
-- **Local-only.** No remote; never push; metadata sidecars drop DOI fields.
+- **Published mirror.** The suite copy is local-only; this mirror is pushed, and
+  the metadata sidecars drop DOI fields because nothing is archived.
 - **Lineage gate.** Keep `template[_]code_project` strings out of your own
   docs (bracket-split any self-referential `rg`/prose so they don't self-trip).
 

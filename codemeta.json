@@ -4,7 +4,7 @@
   "name": "the_man_with_the_golden_gun",
   "identifier": "the_man_with_the_golden_gun",
   "description": "PROJECT BOND film package for The Man with the Golden Gun (1974), mission codename SOLEX. Deterministic mission software for solar concentration yield, funhouse lair escape topology, and assassin duel/bounty scheduling, adapted to the frozen bond-api MissionProvider protocol.",
-  "codeRepository": null,
+  "codeRepository": "https://github.com/docxology/bond-the_man_with_the_golden_gun",
   "license": "https://spdx.org/licenses/MIT",
   "version": "0.1.0",
   "programmingLanguage": {

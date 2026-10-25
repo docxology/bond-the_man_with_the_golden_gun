@@ -2,10 +2,11 @@
 
 **This is an active PROJECT BOND film package** in the suite under
 `projects/working/bond/`. The Man with the Golden Gun (1974) · mission codename
-**SOLEX**. This is a **local-only** working tree: there is **no remote** and it
-is never pushed. Scope rules are the shared BOND guardrail preamble — work only
-inside this package directory, commit path-scoped inside this repository only,
-no mock framework, deterministic real-data tests, and a ≥90% line+branch
+**SOLEX**. This checkout is the package's standalone mirror, pushed to GitHub as
+`docxology/bond-the_man_with_the_golden_gun`; only the suite tree is local-only.
+Scope rules are the shared BOND guardrail preamble — work only inside this
+package directory, commit path-scoped inside this repository only, no mock
+framework, deterministic real-data tests, and a ≥90% line+branch
 coverage gate on `src/`.
 
 ## Identity
@@ -120,7 +121,7 @@ uv run pytest tests/ --cov=src --cov-fail-under=90
 uv run ruff check src/ scripts/
 uv run ruff format --check src/ scripts/
 uv run mypy src/ scripts/
-rg -n "template[_]code_project" . --glob '!uv.lock' --glob '!.git/**' --glob '!.venv/**'   # -> zero
+rg -n "template[_]code_project" . --glob '!uv.lock' --glob '!.git/**' --glob '!.venv/**'   # -> the two permitted lineage mentions only (`README.md`, `docs/AGENTS.md`); any third hit is a defect
 ```
 
 Required: zero failures, zero skips, coverage at or above the gate, clean lint
@@ -147,9 +148,9 @@ frozen surface is tabulated in `docs/architecture.md`.
 
 ## Publishing note
 
-Local-only: no remote, never push. The metadata sidecars (`.zenodo.json`,
-`CITATION.cff`, `codemeta.json`) omit DOI fields because the tree is not
-published — they carry no placeholder DOI.
+Published as a standalone mirror (the suite copy is the local-only tree). The
+metadata sidecars (`.zenodo.json`, `CITATION.cff`, `codemeta.json`) omit DOI
+fields because there is no Zenodo deposit and no archived release.
 
 ## Troubleshooting
 

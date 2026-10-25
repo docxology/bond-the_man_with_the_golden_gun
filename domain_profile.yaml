@@ -23,7 +23,7 @@ review_gates:
   zero_mock_tests: true
   deterministic: true
   git_clean_after_commit: true
-  no_remote_push: true
+  no_remote_push: false  # suite copy stays local-only; this mirror is published
 
 source_policy:
   real_data_only: true

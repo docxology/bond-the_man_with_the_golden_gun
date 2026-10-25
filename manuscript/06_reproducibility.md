@@ -81,8 +81,8 @@ recorded in `docs/testing_philosophy.md`.
 
 ## What is not reproducible here
 
-This is a **local-only** working tree with no git remote and no published
-archive. There is no DOI, no Zenodo deposit, and no public URL: the metadata
-sidecars (`.zenodo.json`, `CITATION.cff`, `codemeta.json`) deliberately omit
-DOI fields rather than carrying a placeholder. Reproduction therefore means
+The code is public as a standalone mirror, but there is no archived release: no
+DOI, no Zenodo deposit, and no versioned artifact beyond the git history. The
+metadata sidecars (`.zenodo.json`, `CITATION.cff`, `codemeta.json`) deliberately
+omit DOI fields rather than carrying a placeholder. Reproduction therefore means
 re-running the commands above inside this checkout, not fetching a release.

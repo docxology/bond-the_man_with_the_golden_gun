@@ -29,6 +29,6 @@ disagreement, the token gate fails on any metric prose cites but code does not
 produce, and the coverage gate is set at {{COVERAGE_GATE_PCT}}% line-and-branch
 on `src/` with a zero-mock suite. Determinism is likewise enforced rather than
 asserted: the {{NUM_FIGURES}} figures are re-rendered and byte-compared in the
-test suite. The package is a local-only working tree and publishes no remote,
-so reproduction means re-running the pipeline in place — see
+test suite. The package ships as a published mirror with no archive deposit
+and no DOI, so reproduction means re-running the pipeline in place — see
 [Reproducibility](#reproducibility).

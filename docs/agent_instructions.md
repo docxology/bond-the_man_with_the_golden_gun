@@ -4,8 +4,8 @@ Read this before changing anything. Package rules: [`../AGENTS.md`](../AGENTS.md
 Structure: [`architecture.md`](architecture.md). Test doctrine:
 [`testing_philosophy.md`](testing_philosophy.md).
 
-This is a **local-only** PROJECT BOND film package: there is no git remote and
-nothing is ever pushed.
+This is a PROJECT BOND film package published as a standalone mirror; the suite
+copy is the local-only tree.
 
 ## Operational constraints
 
@@ -30,7 +30,7 @@ nothing is ever pushed.
 ## Before you start
 
 ```bash
-cd /Users/4d/Documents/GitHub/template/projects/working/bond/the_man_with_the_golden_gun
+cd "$(git rev-parse --show-toplevel)"   # run from this package's root
 uv sync --extra dev          # resolves the bond-api path dependency
 uv run pytest tests/ -q      # confirm you are starting from green
 git status --short           # confirm you are starting from clean

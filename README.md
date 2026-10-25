@@ -6,7 +6,9 @@ three technical premises as real algorithms — the Solex solar concentrator, th
 mirror-walled funhouse lair, and the assassin's contract book — exposed through
 the frozen `bond-api` `MissionProvider` protocol.
 
-Local-only working tree: **no remote, never push.**
+Standalone mirror of the suite package, published at
+[`docxology/bond-the_man_with_the_golden_gun`](https://github.com/docxology/bond-the_man_with_the_golden_gun);
+the suite tree under `projects/working/bond/` stays local-only.
 
 ## The film as a specification
 
@@ -74,7 +76,7 @@ tests/                     zero-mock real-data suite
 ## Quick start
 
 ```bash
-uv sync --extra dev                                       # resolves the bond-api path dep
+uv sync --extra dev                                       # needs the suite monorepo; else see STANDALONE.md
 uv run python scripts/00_preflight.py                     # protocol discoverability
 uv run python scripts/run_mission.py                      # brief..debrief (all phases)
 uv run python scripts/generate_artifacts.py               # outcome JSON + figures

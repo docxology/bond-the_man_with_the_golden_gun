@@ -3,8 +3,8 @@
 PROJECT BOND film package for *The Man with the Golden Gun* (1974), mission
 codename **SOLEX**: six pure domain modules (heliostat yield, solar tracking,
 lair escape topology, lair flows, duel scheduling, deadline scheduling) behind
-the frozen `bond-api` `MissionProvider`. Local-only working tree — no remote,
-never push. **Verified state today (measured 2026-08-06, round-2 improvement
+the frozen `bond-api` `MissionProvider`. Published standalone mirror; the suite
+copy stays local-only. **Verified state (measured 2026-08-06, round-2 improvement
 session, Python 3.14.6 darwin): 206 tests passed, 0 failures / 0 errors / 0
 skips, 100.00% line and 100.00% branch coverage on `src/` against a
 `--cov-fail-under=90` gate;
@@ -19,49 +19,19 @@ git log and in the shipped code.
 
 ### Correctness
 
-**C1 — The lineage gate command in `AGENTS.md` does not do what its comment
-says.**
-`AGENTS.md:123` ships this as a required gate:
+**None open.** Both correctness findings from the previous round were closed by
+the maintenance pass:
 
-```
-rg -n "template[_]code_project" . --glob '!uv.lock' --glob '!.git/**' --glob '!.venv/**'   # -> zero
-```
-
-Run today it returns **two** hits, not zero: `README.md:107` (the gate row that
-names the string while describing the rule) and `docs/AGENTS.md:42` (the
-sentence permitting lineage to be mentioned as history). `README.md:107` states
-the rule correctly — "zero … *outside docs explaining the exemplar lineage*" —
-so the code is fine and the `AGENTS.md` comment is wrong. Anyone running the
-documented gate literally concludes the package is red when it is green.
-*Done when:* `AGENTS.md:123` either excludes the two documentation files with
-explicit `--glob` negations, or its trailing comment states the true expected
-result and names the permitted files.
-*Command:* `rg -n "template[_]code_project" . --glob '!uv.lock' --glob '!.git/**' --glob '!.venv/**'`
-— the output must match what `AGENTS.md:123` claims.
-
-**C2 — The manuscript states two fleet packages have not shipped; both have.**
-`manuscript/07_scope_and_related_work.md:80-83` reads "Two integration points
-remain open … persisting executed outcomes to a provenance store once
-`bond-utilities` ships, and cross-package missions once the coordinator lands."
-Both premises are false as of today:
-
-* `bond-utilities/src/bond_utilities/mission_io.py:153` defines
-  `record_provenance_outcome`, plus `hash_payload:45`, `validate_record:61`,
-  `save_record:92`, `verify_provenance:212`, `append_outcome:296`.
-* `bond-coordinator/src/bond_coordinator/registry.py:174` already carries a
-  `the_man_with_the_golden_gun` / SOLEX record, and
-  `bond-coordinator/src/bond_coordinator/reconcile.py:109,137` provide
-  `harvest_gadgets` and `reconcile_report`, driven by
-  `bond-coordinator/scripts/reconcile.py`, which loads providers by slug via
-  `bond_api.discovery.load_provider`.
-
-Manuscript prose is deliberately not edited by this task; this is recorded, not
-fixed. Note this is *scope* prose, not a token, so no gate can catch it — see
-V1 for the same class of unbound restatement.
-*Done when:* the paragraph either states the integration is complete (once E1
-and V8 land) or names what is actually still missing.
-*Command:* `ls ../bond-utilities/src/bond_utilities/mission_io.py ../bond-coordinator/src/bond_coordinator/reconcile.py`
-— both exist, so the paragraph as written is falsified.
+* **C1** — the lineage-gate comment at `AGENTS.md` claimed a zero-hit run while
+  the documented command legitimately returns the two permitted lineage
+  mentions. Fixed: the comment now names the permitted files (`README.md`,
+  `docs/AGENTS.md`) and states that any third hit is a defect. The command
+  itself is unchanged, and `README.md:109` still states the rule correctly.
+* **C2** — `manuscript/07_scope_and_related_work.md` described `bond-utilities`
+  and the coordinator as unshipped. Fixed: the paragraph now states that both
+  fleet components have landed and that only this package's own wiring (`E1`
+  below) remains. The evidence citations that justified the fix are preserved in
+  the git history of this file's previous revision.
 
 ### Verification
 
@@ -87,7 +57,7 @@ control that tampers with a copy in `tmp_path` and asserts red.
 **V2 — The zero-mock claim is policy, not a gate.**
 `manuscript/config.yaml:71` declares `mock_frameworks_allowed: 0` under a
 comment reading "Enforced quality gates", `domain_profile.yaml:21` declares
-`zero_mock_tests: true`, and `README.md:101` / `AGENTS.md:8` state it as a rule.
+`zero_mock_tests: true`, and `README.md:103` / `AGENTS.md:9` state it as a rule.
 No test scans `tests/` for `unittest.mock`, `MagicMock`, `mocker.patch` or
 `monkeypatch`. `declarations.verify_domain_profile` checks only `project`,
 `codename`, `source_policy.modules`, `artifact_expectations.script_artifacts`
@@ -103,7 +73,7 @@ pass vacuously.
 **V3 — The coverage floor has a third, unbound copy.**
 `declarations.verify_domain_profile(coverage_gate=...)`
 (`declarations.py:416-423`, driven by `tests/test_declarations.py:198-208`)
-cross-checks `domain_profile.yaml:20` against `manuscript/config.yaml:70`. The
+cross-checks `domain_profile.yaml:22` against `manuscript/config.yaml:70`. The
 number that actually gates the suite is `pyproject.toml:61`
 (`[tool.coverage.report] fail_under = 90`), and nothing binds it to either. Drop
 it to 50 and every declaration check still passes.
@@ -197,7 +167,7 @@ not exist yet)
 `manuscript/README.md`, `STANDALONE.md`. Module counts read "six" everywhere and
 match `declarations.DOMAIN_MODULES` (itself gated by
 `tests/test_declarations.py:139-146` and `:184-195`); the four figures match the
-`FIGURES` registry; `docs/architecture.md:172`'s "currently 22 entries" is held
+`FIGURES` registry; `docs/architecture.md:173`'s "currently 22 entries" is held
 by `tests/test_mission.py:82`; `docs/_generated/COUNTS.md` matches this
 session's measurement exactly (200 tests, 1047 statements, 326 branches,
 100.00%). The two documentation problems found are stated wrongly enough to be
@@ -251,7 +221,7 @@ question and is tested only on the canonical lair plus three toy graphs
 answers barely diverge. A deterministic generated fixture at 100+ rooms would
 scale-test the exact solver and give a graph where cut vertices and
 entry→exit bottlenecks visibly differ, which is the mistake
-`AGENTS.md:44-47` warns about.
+`AGENTS.md:45-48` warns about.
 
 **E5 — Cross-package scheduling scenario.** The duel and deadline books are
 self-contained. A scenario sharing one appointment book across two film
@@ -279,9 +249,9 @@ Accepted and out of scope. Recorded so they are not re-litigated.
 * **Perfect-information scheduling.** No arrivals over time, no duration
   uncertainty, no cancellation, no travel time
   (`manuscript/07_scope_and_related_work.md:51-53`).
-* **No publishing.** Local-only tree: no remote, no DOI, no archive deposit.
-  `.zenodo.json`, `CITATION.cff` and `codemeta.json` omit DOI fields rather than
-  carrying placeholders (`AGENTS.md:148-152`).
+* **No archived release.** Published as a standalone mirror, but there is no
+  DOI and no archive deposit: `.zenodo.json`, `CITATION.cff` and `codemeta.json`
+  omit DOI fields rather than carrying placeholders (`AGENTS.md:149-153`).
 * **`__init__.py` excluded from coverage** (`pyproject.toml:52-56`). It is 161
   lines of re-exports; the exclusion is why "100.00%" covers eleven modules
   rather than twelve (`docs/_generated/COUNTS.md`).
@@ -292,7 +262,8 @@ Accepted and out of scope. Recorded so they are not re-litigated.
 * **`review_gates` booleans other than the coverage floor are policy statements,
   not machine-checked facts** — `domain_profile.yaml:11-13` says so explicitly.
   V2 above proposes closing one of them (`zero_mock_tests`); the rest
-  (`deterministic`, `git_clean_after_commit`, `no_remote_push`) stay policy.
+  (`deterministic`, `git_clean_after_commit`) stay policy. `no_remote_push` is
+  `false`: the suite copy is local-only, but this mirror is published.
 * **Scope softened by audit:** the audit found `config.yaml`'s claim that
   "every key in this block is verified" was false when only 6 keys were checked.
   It is now true — `verify_declared_experiment` enumerates the leaf keys present
@@ -316,7 +287,7 @@ plus the working-tree TODO change, from the package root.
 | `uv run mypy src/ scripts/` | `Success: no issues found in 22 source files` |
 | `uv run python scripts/00_preflight.py` | exit 0, prints `preflight OK` |
 | `uv run python scripts/z_generate_manuscript_variables.py` | exit 0, prints `all manuscript tokens resolved` |
-| `rg -n "template[_]code_project" . --glob '!uv.lock' --glob '!.git/**' --glob '!.venv/**'` | two hits, both documentation explaining the exemplar lineage (`README.md:107`, `docs/AGENTS.md:42`) — see **C1**, the comment at `AGENTS.md:123` says "zero" and is wrong |
+| `rg -n "template[_]code_project" . --glob '!uv.lock' --glob '!.git/**' --glob '!.venv/**'` | two hits, both documentation explaining the exemplar lineage (`README.md:109`, `docs/AGENTS.md:42`) — which is what the comment at `AGENTS.md` now states (**C1** closed) |
 
 Sandbox note: `uv` cannot write its cache under the default sandbox; re-run any
 `uv` command with the sandbox disabled if it reports
@@ -402,10 +373,10 @@ equator) so the prose matches the computed data.
 
 ### Left for a future round
 
-* TODO **C1** (lineage gate comment in `AGENTS.md` still claims "zero" while the
-  documented command legitimately returns the two documentation hits) and **C2**
-  (fleet-integration prose in `07_scope_and_related_work.md`) remain open —
-  deliberately prose/scope, not fixed this round.
+* TODO **C1** (lineage gate comment in `AGENTS.md`) and **C2**
+  (fleet-integration prose in `07_scope_and_related_work.md`) were **closed** by
+  the maintenance pass, which corrected both and folded them into the
+  "Correctness" section above.
 * TODO **E2** (annual DNI sweep as a fifth figure), **E3** (per-heliostat
   incidence/cosine loss), **E4** (large seeded lair fixture) remain open
   extensions; the new sensitivity tables are a partial, token-bound answer to

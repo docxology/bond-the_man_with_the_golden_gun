@@ -4,7 +4,7 @@ Importable package logic under `src/the_man_with_the_golden_gun/`.
 
 | Module | Responsibility | Imports |
 | --- | --- | --- |
-| `solar_concentration.py` | mirror-array → heat yield, optimal allocation | stdlib + numpy |
+| `solar_concentration.py` | mirror-array → heat yield, optimal allocation | stdlib |
 | `solar_tracking.py` | solar geometry, daylight window, clear-sky insolation | stdlib |
 | `lair_topology.py` | funhouse graph escape / bottlenecks | stdlib |
 | `lair_flows.py` | max flow, min cut, cost-aware escape | stdlib |

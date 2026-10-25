@@ -1,7 +1,7 @@
 # PROJECT BOND · the_man_with_the_golden_gun (film package)
 # Mission codename: SOLEX — special-agent mission software.
-# Inherits workspace settings from root pyproject.toml; this is a LOCAL-ONLY
-# working tree (no remote, never push).
+# Standalone mirror of the suite package (github.com/docxology/bond-the_man_with_the_golden_gun).
+# `[tool.uv.sources]` below points at the suite monorepo checkout, so `uv sync` needs that tree.
 
 [build-system]
 requires = ["setuptools>=61.0"]

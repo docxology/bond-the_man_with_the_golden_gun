@@ -154,6 +154,10 @@ uv run pytest tests/test_lair_flows.py -v              # one module
 uv run pytest tests/ -k determinis -v                  # one theme
 ```
 
+`uv run` needs the suite monorepo — the `bond-api` path dependency. On a clone
+without that checkout, run the same commands as `python -m pytest …` against a
+venv; the recipe is in [`../STANDALONE.md`](../STANDALONE.md).
+
 Coverage below the gate, any failure, or any skip is a red build. Skips are
 treated as failures of the fixture, not as an acceptable state: there is no
 environment-dependent test in this package that would legitimately need one.

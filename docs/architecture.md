@@ -81,8 +81,9 @@ angle.
   `field_daily_energy_kwh` — the daily resource and what the field converts.
 * `solex_daily_profile` — sunrise-to-sunset flux samples for the daily figure.
 
-This module is the only place in the core that imports another core module: it
-takes `Mirror` from `solar_concentration` for the field aperture sum.
+Two places in the core cross-import another core module: this one takes
+`Mirror` from `solar_concentration` for the field aperture sum, and
+`lair_flows` takes `Adjacency` / `build_lair_graph` from `lair_topology`.
 
 ### `lair_topology.py` — funhouse escape topology
 

@@ -138,8 +138,10 @@ scripts. The reasoning behind each choice is in `docs/testing_philosophy.md`.
 
 ## Protocol integration
 
-`[tool.uv.sources] bond-api = { path = ".../projects/working/bond/bond-api" }`
-is declared in `pyproject.toml`. bond-api is **done and frozen** — do not invent
+`[tool.uv.sources]` declares `bond-api = { path = "../bond-api" }` in
+`pyproject.toml` — the sibling `bond-api` directory, which inside a BOND suite
+tree is `projects/working/bond/bond-api`, the same directory the relative path
+resolves to. bond-api is **done and frozen** — do not invent
 protocol types. Implement the frozen `MissionProvider` surface (`film`,
 `brief`, `recon`, `plan`, `execute`, `debrief`) and the frozen dataclasses.
 `GADGETS()` and `register_gadgets()` keep their current shape; deepen *inside*

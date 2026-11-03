@@ -24,7 +24,7 @@ dependencies = [
 ]
 
 [tool.uv.sources]
-bond-api = { path = "/Users/4d/Documents/GitHub/template/projects/working/bond/bond-api" }
+bond-api = { path = "../bond-api" }
 
 [project.optional-dependencies]
 dev = [

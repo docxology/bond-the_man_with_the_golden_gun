@@ -384,3 +384,7 @@ equator) so the prose matches the computed data.
   add a figure or a per-heliostat aim model.
 * `docs/_generated/COUNTS.md` was regenerated to 206 / 1070 / 338; future gate
   runs must re-copy from their own output per the file's own instruction.
+
+## Workflowz review — 2026-11-10
+
+No concrete, non-duplicate improvement survived this bounded review. Coverage included the supplied project guidance, README, existing TODO, Python/declared runtime configuration, mission CLI wrappers and renderer, package exports, and the deadline/duel/solar-concentration implementations. No silent production substitutes were established from the visible excerpts. Runtime documentation appears stale: `.python-version:1` is `3.15`, whereas `TODO.md:7-11` records a Python 3.14.6 measurement, and `TODO.md:134-144` quotes an older `requires-python = ">=3.10"` while the supplied `pyproject.toml:18` currently declares `>=3.11`; however, the visible evidence does not establish a new independently actionable item beyond the existing V7 runtime-verification work. Re-review after a concrete failure or relevant source/manifest change, with direct evidence for the affected area.

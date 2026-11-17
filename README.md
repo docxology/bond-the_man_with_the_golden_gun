@@ -6,6 +6,30 @@ three technical premises as real algorithms — the Solex solar concentrator, th
 mirror-walled funhouse lair, and the assassin's contract book — exposed through
 the frozen `bond-api` `MissionProvider` protocol.
 
+## Mission model
+
+```mermaid
+flowchart TD
+    accTitle: SOLEX implemented mission analyses
+    accDescr: Solar field, mirror-lair graph and bounty contracts feed Concentration yield and daily solar tracking; Lair escape topology and flow/cost analysis; Weighted duel intervals and deadline scheduling. The mission adapter returns energy yield, escape paths and contract schedules with provenance, then a debrief.
+    I["Solar field, mirror-lair graph and bounty contracts"]
+    G0["Concentration yield and daily solar tracking"]
+    I --> G0
+    G1["Lair escape topology and flow/cost analysis"]
+    I --> G1
+    G2["Weighted duel intervals and deadline scheduling"]
+    I --> G2
+    O["mission.py: execute returns MissionOutcome<br/>Energy yield, escape paths and contract schedules and provenance"]
+    G0 --> O
+    G1 --> O
+    G2 --> O
+    O --> F["debrief: mission summary"]
+```
+
+The branches group implemented capabilities; they do not imply a runtime order.
+
+**Source map:** [`solar_concentration.py`](src/the_man_with_the_golden_gun/solar_concentration.py), [`solar_tracking.py`](src/the_man_with_the_golden_gun/solar_tracking.py); [`lair_topology.py`](src/the_man_with_the_golden_gun/lair_topology.py), [`lair_flows.py`](src/the_man_with_the_golden_gun/lair_flows.py); [`duel_scheduler.py`](src/the_man_with_the_golden_gun/duel_scheduler.py), [`deadline_scheduler.py`](src/the_man_with_the_golden_gun/deadline_scheduler.py); [`mission.py`](src/the_man_with_the_golden_gun/mission.py).
+
 Standalone mirror of the suite package, published at
 [`docxology/bond-the_man_with_the_golden_gun`](https://github.com/docxology/bond-the_man_with_the_golden_gun);
 the suite tree under `projects/working/bond/` stays local-only.

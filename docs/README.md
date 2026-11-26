@@ -1,5 +1,7 @@
 # docs/ — the_man_with_the_golden_gun (SOLEX)
 
+[Package maintenance](package-maintenance.md) covers dependency and release records.
+
 Agent- and reader-facing documentation for this PROJECT BOND film package:
 *The Man with the Golden Gun* (1974), mission codename **SOLEX**, published as
 the standalone mirror `docxology/bond-the_man_with_the_golden_gun`.

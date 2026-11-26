@@ -1,5 +1,7 @@
 # AGENTS.md — working inside `docs/` (the_man_with_the_golden_gun · SOLEX)
 
+[Package maintenance](package-maintenance.md) identifies the dependency and citation records.
+
 Rules for agents editing **this documentation directory**. Package-wide rules
 live in [`../AGENTS.md`](../AGENTS.md); the operational read-first checklist is
 [`agent_instructions.md`](agent_instructions.md).

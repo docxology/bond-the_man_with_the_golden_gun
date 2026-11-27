@@ -1,6 +1,7 @@
 # The Man with the Golden Gun — SOLEX (Special-Agent Mission Software)
 
-See [package maintenance](docs/package-maintenance.md) for dependency and citation records.
+For the distribution version, checkout Python selection, dependency sources,
+and citation records, see [package maintenance](docs/package-maintenance.md).
 
 PROJECT BOND film package for **The Man with the Golden Gun** (1974), mission
 codename **SOLEX**. Deterministic mission software implementing the film's

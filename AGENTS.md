@@ -1,5 +1,8 @@
 # AGENTS.md — the_man_with_the_golden_gun (PROJECT BOND · mission SOLEX)
 
+The [package maintenance guide](docs/package-maintenance.md) records the
+distribution identity, Python selection, dependency provenance, and citation metadata.
+
 **This is an active PROJECT BOND film package** in the suite under
 `projects/working/bond/`. The Man with the Golden Gun (1974) · mission codename
 **SOLEX**. This checkout is the package's standalone mirror, pushed to GitHub as
